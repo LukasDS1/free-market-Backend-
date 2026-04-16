@@ -1,19 +1,18 @@
 package com.freemarket.auth_service.service;
 
 import java.util.List;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
 import com.freemarket.auth_service.repository.UserRepository;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
+import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -83,7 +82,7 @@ public class AuthService {
     //Metodo para validacion de email vacio 
 
     private void emailEmpty(String email){
-        if(email.isEmpty() || email == null){
+        if(email == null || email.isEmpty()){
         throw new IllegalArgumentException();
         }
     }
@@ -100,7 +99,7 @@ public class AuthService {
 
     //Metodo para validacion de usuario vacio
     private void userNameEmpty(String username){
-        if(username.isEmpty() || username == null){
+        if(username == null|| username.isEmpty()){
         throw new IllegalArgumentException();
         }
     }
@@ -110,7 +109,7 @@ public class AuthService {
 /// 
     //Metodo para validacion de firstname vacio
     private void firstNameEmpty(String firstname){
-        if(firstname.isEmpty() || firstname == null){
+        if(firstname == null || firstname.isEmpty()){
         throw new IllegalArgumentException();
         }
     }
@@ -118,7 +117,7 @@ public class AuthService {
 
     //Metodo para validacion de lastName vacio
       private void lastNameEmpty(String lastname){
-        if(lastname.isEmpty() || lastname == null){
+        if(lastname == null || lastname.isEmpty()){
         throw new IllegalArgumentException();
         }
     }
@@ -128,7 +127,7 @@ public class AuthService {
 
          //Metodo para validacion de password vacio
       private void passwordEmpty(String password){
-        if(password.isEmpty() || password == null){
+        if(password == null || password.isEmpty()){
         throw new IllegalArgumentException();
         }
     }
@@ -144,5 +143,36 @@ public class AuthService {
 
 
 // Acualizacion de usuario
+
+    public void UpdateUser(Long id,UpdateRequest user){
+    
+    User user2 = userRespository.findById(id).orElseThrow();
+        
+    if(user.getEmail() != null){
+    emailEmpty(user.getEmail());
+    emailExists(user.getEmail());
+    user2.setEmail(user.getEmail());
+    }
+
+    if(user.getUsername() != null){
+    userNameEmpty(user.getUsername());
+    userExists(user.getUsername());
+    user2.setUsername(user.getUsername());
+    }
+
+    if(user.getPassword() != null){
+    passwordEmpty(user.getPassword());
+
+    if(passwordEncoder.matches(user.getPassword(), user2.getPassword())){
+        throw new IllegalArgumentException();
+    }
+
+    user2.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+
+    userRespository.save(user2);
+
+
+    }
 
 }

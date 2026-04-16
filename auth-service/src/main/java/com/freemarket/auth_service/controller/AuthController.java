@@ -2,15 +2,17 @@ package com.freemarket.auth_service.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
+import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -44,4 +46,15 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     }
 }
 
+
+@PatchMapping("/update/{id}")
+public ResponseEntity<?> updateUser(@PathVariable Long id,@RequestBody UpdateRequest user){
+    try {
+        authService.UpdateUser(id,user);
+        return ResponseEntity.ok().build();
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+}
 }
