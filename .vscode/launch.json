@@ -9,6 +9,16 @@
             "projectName": "auth-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-StateServiceApplication<state-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.freemarket.state_service.StateServiceApplication",
+            "projectName": "state-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
