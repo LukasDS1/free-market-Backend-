@@ -1,9 +1,12 @@
 package com.freemarket.state_service.service;
 
+import org.springframework.stereotype.Service;
+
 import com.freemarket.state_service.model.state;
 import com.freemarket.state_service.repository.stateRepository;
-import com.jetbrains.exported.JBRApi.Service;
+
 import lombok.AllArgsConstructor;
+
 
 @Service
 @AllArgsConstructor
@@ -11,15 +14,15 @@ public class stateService {
 
 private final stateRepository stateRepository;
 
+    public boolean isAvailable(Long id){
 
-    //agregar conectividad con cliente
-    private boolean isAvalible(state State){
-        if(State.getStateName().equals("ACTIVO")){
+        state state = stateRepository.findById(id).orElseThrow(); 
+
+        if(state.getStateName().equals("ACTIVO")){
             return true;
-        } else {
+        }else {
             return false;
         }
-
     }
 
 
