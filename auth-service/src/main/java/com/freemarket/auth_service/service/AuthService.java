@@ -54,10 +54,13 @@ public class AuthService {
            user2.setFirstName(user.getFirstName());
            lastNameEmpty(user.getLastName());
            user2.setLastName(user.getLastName());
+           user2.setGenre(user.getGenre().toUpperCase());
            passwordEmpty(user.getPassword());
            user2.setPassword(passwordEncoder.encode(user.getPassword()));
            rolValidtationOk(user.getRol());
            user2.setRol(user.getRol());
+           user2.setStateId(1L);
+
            userRespository.save(user2);
            return AuthResponse.builder()
            .token(jwtService.getToken(user2)).build();
@@ -142,6 +145,8 @@ public class AuthService {
     }
 
 
+
+
 // Acualizacion de usuario
 
     public void UpdateUser(Long id,UpdateRequest user){
@@ -168,6 +173,10 @@ public class AuthService {
     }
 
     user2.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+
+    if(user.getGenre() != null){
+        user2.setGenre(user.getGenre().toUpperCase());
     }
 
     userRespository.save(user2);

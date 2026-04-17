@@ -35,14 +35,14 @@ public class LoadDataBase {
                 Rol repartidor = new Rol(null, "DELIVERY", "Rol de repartidor",new ArrayList<>());
                 rolRepository.save(repartidor);
 
-                User ADM = new User(null,"admin@gmail.com","AdminUser12#","ADMIN","Juan","Perez",null,admin);
+                User ADM = new User(null,"admin@gmail.com","AdminUser12#","ADMIN","Juan","Perez","Masculino",1L,admin);
                 
                 String encoded = passwordEncoder.encode(ADM.getPassword());  
                 ADM.setPassword(encoded);
                 userRepository.save(ADM);
 
 
-                 User USR = new User(null,"user@gmail.com","AdminUser12#","USER","Pablo","Pincel",null,Usuario);
+                 User USR = new User(null,"user@gmail.com","AdminUser12#","USER","Pablo","Pincel","Masculino",1L,Usuario);
                 String encoded2 = passwordEncoder.encode(USR.getPassword());
                 USR.setPassword(encoded2);
                 userRepository.save(USR);

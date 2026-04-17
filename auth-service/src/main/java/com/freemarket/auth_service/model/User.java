@@ -54,6 +54,10 @@ public class User implements UserDetails {
     (nullable = true,length = 20)
     private String genre;
 
+    @Column
+    (nullable = false, length = 20)
+    private  Long stateId;
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol")
