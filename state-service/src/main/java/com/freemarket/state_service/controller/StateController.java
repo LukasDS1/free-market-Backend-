@@ -18,9 +18,9 @@ public class StateController {
 
 
     @GetMapping("/{id}")
-public ResponseEntity<Boolean> isAvailable(@PathVariable Long id) {
+public ResponseEntity<?> isAvailable(@PathVariable Long id) {
     try {
-        boolean result = StateService.isAvailable(id);
+        String result = StateService.isAvailable(id);
         return ResponseEntity.ok(result);
     } catch (Exception e) {
         return ResponseEntity.badRequest().build();
