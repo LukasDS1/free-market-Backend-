@@ -6,6 +6,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -27,6 +29,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RolRepository rolRepository;
+    private final RestTemplate restTemplate;
+
 
     public AuthResponse login(LoginRequest request){
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -70,6 +74,15 @@ public class AuthService {
         }
     }
 
+//Conexion con rest
+
+    public String GetState(Long userId){
+        User user = userRespository.findById(userId).orElseThrow();
+
+        String URL = "http://state-service/api-v1/state/{id}";
+
+        return restTemplate.getForObject( URL, String.class,user.getStateId());
+    }
 
 /// Validaciones de email
 

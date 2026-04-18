@@ -14,14 +14,14 @@ public class stateService {
 
 private final stateRepository stateRepository;
 
-    public boolean isAvailable(Long id){
+    public String isAvailable(Long id){
 
         state state = stateRepository.findById(id).orElseThrow(); 
 
         if(state.getStateName().equals("ACTIVO")){
-            return true;
+            return "ACTIVO";
         }else {
-            return false;
+            return "INACTIVO";
         }
     }
 
