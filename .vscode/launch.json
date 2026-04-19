@@ -29,6 +29,16 @@
             "projectName": "eureka-server",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-PrivilegesServiceApplication<privileges-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.freemarket.privileges_service.PrivilegesServiceApplication",
+            "projectName": "privileges-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

@@ -46,6 +46,7 @@ public class AuthService {
     }
     
     public AuthResponse registerUser(RegisterRequest user){
+        
         User user2 = new User();
         try {
            emailExists(user.getEmail());
@@ -64,7 +65,6 @@ public class AuthService {
            rolValidtationOk(user.getRol());
            user2.setRol(user.getRol());
            user2.setStateId(1L);
-
            userRespository.save(user2);
            return AuthResponse.builder()
            .token(jwtService.getToken(user2)).build();
