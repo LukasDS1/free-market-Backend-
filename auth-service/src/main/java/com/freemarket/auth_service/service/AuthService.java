@@ -1,6 +1,8 @@
 package com.freemarket.auth_service.service;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,7 +46,16 @@ public class AuthService {
     public List<User> getAllUsers(){
        return userRespository.findAll();
     }
-    
+
+
+    public boolean getByid(Long id){
+        if(userRespository.existById(id)){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
     public AuthResponse registerUser(RegisterRequest user){
         
         User user2 = new User();
