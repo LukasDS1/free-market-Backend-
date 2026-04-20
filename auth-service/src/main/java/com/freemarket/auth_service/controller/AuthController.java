@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.freemarket.auth_service.service.RolService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -83,6 +85,17 @@ public ResponseEntity<?> GetRolID(@PathVariable Long id) {
     
     }
 }
+
+@GetMapping("/{id}")
+public ResponseEntity<?> getById(@PathVariable Long id) {
+     try {
+        return ResponseEntity.ok().body(authService.getByid(id));
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().build();
+    
+    }
+}
+
 
 
 
