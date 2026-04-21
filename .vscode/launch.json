@@ -8,7 +8,8 @@
             "mainClass": "com.freemarket.auth_service.AuthServiceApplication",
             "projectName": "auth-service",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=60971 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=auth-service"
         },
         {
             "type": "java",
@@ -28,7 +29,8 @@
             "mainClass": "com.free_market.eureka_server.EurekaServerApplication",
             "projectName": "eureka-server",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=60753 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=eureka-server"
         },
         {
             "type": "java",
@@ -37,6 +39,16 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "com.freemarket.privileges_service.PrivilegesServiceApplication",
             "projectName": "privileges-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-LocationsServiceApplication<locations-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.freemarket.locations_service.LocationsServiceApplication",
+            "projectName": "locations-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

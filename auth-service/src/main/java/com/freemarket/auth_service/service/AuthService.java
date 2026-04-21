@@ -49,7 +49,7 @@ public class AuthService {
 
 
     public boolean getByid(Long id){
-        if(userRespository.existById(id)){
+        if(userRespository.existsById(id)){
             return true;
         }else {
             return false;
