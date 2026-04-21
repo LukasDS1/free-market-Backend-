@@ -1,5 +1,7 @@
 package com.freemarket.locations_service.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -12,7 +14,6 @@ import com.freemarket.locations_service.repository.LocationBodegaRepository;
 import com.freemarket.locations_service.repository.LocationRepository;
 import com.freemarket.locations_service.repository.RegionRepository;
 import com.freemarket.locations_service.request.LocationRequest;
-import com.freemarket.locations_service.response.LocationBodegaResponse;
 import com.freemarket.locations_service.response.LocationResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,9 @@ public class LocationsService {
 
     private final RegionRepository regionRepo;
 
-    private final RestTemplate restTemplate;
+    @Autowired
+    @Qualifier("restTemplate")
+    private  RestTemplate restTemplate;
 
     
 
@@ -81,7 +84,6 @@ public class LocationsService {
 
     return response;
 }
-
 
 
     //Rest

@@ -14,4 +14,9 @@ public class RestConfig {
         return new RestTemplate();
     }
 
+    @Bean
+    public RestTemplate RestTemplateNormal() {
+    return new RestTemplate();
+}
+
 }
