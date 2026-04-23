@@ -2,6 +2,7 @@ package com.freemarket.auth_service.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,8 @@ import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -49,11 +52,7 @@ public class AuthService {
 
 
     public boolean getByid(Long id){
-        if(userRespository.existsById(id)){
-            return true;
-        }else {
-            return false;
-        }
+        return userRespository.existsById(id);
     }
 
     public AuthResponse registerUser(RegisterRequest user){
@@ -86,19 +85,28 @@ public class AuthService {
     }
 
 //Conexion con rest
+//implementacion de TIME OUT + CIRCUIT BREAKER
 
-    public String GetState(Long userId){
+
+@CircuitBreaker(name = "auhtService",fallbackMethod = "getStateFallback")
+@TimeLimiter(name = "auhtService" )
+public CompletableFuture<String> GetState(Long userId){
+
         User user = userRespository.findById(userId).orElseThrow();
 
         String URL = "http://state-service/api-v1/state/{id}";
+        
 
-        return restTemplate.getForObject( URL, String.class,user.getStateId());
+        return CompletableFuture.supplyAsync(() -> restTemplate.getForObject(URL, String.class,user.getUserId()));
     }
 
+
+
+//fallback pa cuando se abra el hilo
+public CompletableFuture<String> getStateFallback(Long userId, Exception ex){
+    return CompletableFuture.completedFuture("State is not avalible ");
+}
 /// Validaciones de email
-
-
-
     //Metodo para validacion de email en uso
     private void emailExists(String email){
          if(userRespository.existsByEmail(email)){

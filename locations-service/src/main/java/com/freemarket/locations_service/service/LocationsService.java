@@ -1,5 +1,7 @@
 package com.freemarket.locations_service.service;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,8 @@ import com.freemarket.locations_service.repository.RegionRepository;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,6 +38,7 @@ public class LocationsService {
     @Qualifier("restTemplate")
     private  RestTemplate restTemplate;
 
+   
 
     //actualizar locacion 
     public LocationResponse updateLocation(LocationRequest request) {
@@ -43,7 +48,7 @@ public class LocationsService {
 
     if (request.getAddress() != null && !request.getAddress().isEmpty()) {
         validationAddress(request.getAddress());
-        MapsDTO map = MapService.geocode(request.getAddress());
+        MapsDTO map = MapService.geocode(request.getAddress()).join();
         location.setStreetAddress(map.getFormattedAddress());
         location.setLatitude(map.getLatitude());
         location.setLongitud(map.getLongitude());
@@ -98,11 +103,11 @@ public class LocationsService {
     validationComuna(request.getComuna());
     validationRegion(request.getRegion());
 
-    if (!GetUserById(request.getUserId())) {
+    if (!GetUserById(request.getUserId()).join()) { 
         throw new RuntimeException();
     }
 
-    MapsDTO map = MapService.geocode(request.getAddress());
+    MapsDTO map = MapService.geocode(request.getAddress()).join();
 
     Region region = regionRepo.findByNombreRegion(request.getRegion())
             .orElseGet(() -> {
@@ -142,11 +147,17 @@ public class LocationsService {
 
 
     //Rest
-    private boolean GetUserById(Long id){
-
+    @CircuitBreaker(name = "authService", fallbackMethod = "getUserByIdFallback")
+    @TimeLimiter(name = "authService")
+    public CompletableFuture<Boolean> GetUserById(Long id) {
         String URL = "http://auth-service/api-v1/auth/{id}";
+        return CompletableFuture.supplyAsync(() ->
+            restTemplate.getForObject(URL, Boolean.class, id)
+        );
+    }
 
-        return restTemplate.getForObject( URL, boolean.class,id);
+     public CompletableFuture<Boolean> getUserByIdFallback(Long id, Exception ex) {
+        return CompletableFuture.completedFuture(false);
     }
 
 

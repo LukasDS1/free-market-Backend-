@@ -2,6 +2,7 @@ package com.freemarket.locations_service.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.freemarket.locations_service.DTO.MapsDTO;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,28 +28,42 @@ public class GoogleMapsService {
     public GoogleMapsService(@Qualifier("RestTemplateNormal") RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+    
+     @CircuitBreaker(name = "mapsService", fallbackMethod = "geocodeFallback")
+    @TimeLimiter(name = "mapsService")
+    public CompletableFuture<MapsDTO> geocode(String address) {
+        return CompletableFuture.supplyAsync(() -> {
 
-    public MapsDTO geocode(String address) {
-        String url = "https://nominatim.openstreetmap.org/search"
-                   + "?q=" + address
-                   + "&format=json&addressdetails=1&limit=1";
+            String url = "https://nominatim.openstreetmap.org/search"
+                       + "?q=" + address
+                       + "&format=json&addressdetails=1&limit=1";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("User-Agent", "locations-service/1.0");
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "locations-service/1.0");
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<List> response = restTemplate.exchange(
-            url, HttpMethod.GET, entity, List.class
+            ResponseEntity<List> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, List.class
+            );
+
+            List results = response.getBody();
+
+            if (results == null || results.isEmpty()) {
+                throw new RuntimeException("Dirección no encontrada: " + address);
+            }
+
+            return parseResponse((Map) results.get(0));
+        });
+    }
+
+    // Se ejecuta si OpenStreetMap no responde o tarda más de 5s
+    public CompletableFuture<MapsDTO> geocodeFallback(String address, Exception ex) {
+        CompletableFuture<MapsDTO> failed = new CompletableFuture<>();
+        failed.completeExceptionally(
+            new RuntimeException("Servicio de mapas no disponible para: " + address)
         );
-
-        List results = response.getBody();
-
-        if (results == null || results.isEmpty()) {
-            throw new RuntimeException("Dirección no encontrada: " + address);
-        }
-
-        return parseResponse((Map) results.get(0));
+        return failed;
     }
 
     private MapsDTO parseResponse(Map result) {
@@ -56,13 +73,11 @@ public class GoogleMapsService {
 
         Map address = (Map) result.get("address");
 
-        // comuna: city > town > village > county
         String comuna = (String) address.getOrDefault("city",
                          address.getOrDefault("town",
                          address.getOrDefault("village",
                          address.get("county"))));
 
-        // region
         String region = (String) address.get("state");
 
         MapsDTO dto = new MapsDTO();
@@ -74,6 +89,7 @@ public class GoogleMapsService {
 
         return dto;
     }
+
 }
 
 
