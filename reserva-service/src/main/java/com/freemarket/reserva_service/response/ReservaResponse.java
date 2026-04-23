@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ReservaResponse {
 
     public Long idReserva;
-    public Long reserveDate;
+    public Date reserveDate;
     public int totalPrice;
 
 

@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Reserve;
@@ -11,6 +12,7 @@ import com.freemarket.reserva_service.model.ReserveDetails;
 import com.freemarket.reserva_service.repository.ProductRepository;
 import com.freemarket.reserva_service.repository.ReserveDetailsRepository;
 import com.freemarket.reserva_service.repository.ReserveRepository;
+import com.freemarket.reserva_service.request.CancelReserveRequest;
 import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
@@ -18,6 +20,7 @@ import com.freemarket.reserva_service.response.ReservaResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ReservaService {
 
@@ -38,7 +41,7 @@ public class ReservaService {
 
         Reserve reserve = new Reserve();
         reserve.setIdUser(request.getIdUser());
-        reserve.setReserveDate(System.currentTimeMillis());
+        reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
         Reserve savedReserve = reserveRepository.save(reserve);
 
@@ -52,15 +55,17 @@ public class ReservaService {
             if (product.getProductStock() < item.getQuantity()) {
                 throw new IllegalArgumentException();
             }
-
+            
+            product.setProductStock(product.getProductStock() - item.getQuantity());
+            productRepository.save(product);
+            
             ReserveDetails details = new ReserveDetails();
             details.setQuanty(item.getQuantity());
             details.setUnitPrice(product.getProductprice());
             details.setProduct(product);
             details.setReserve(savedReserve);
             reserveDetailsRepository.save(details);
-            product.setProductStock(product.getProductStock() - item.getQuantity());
-            productRepository.save(product);
+
             total += product.getProductprice() * item.getQuantity();
         }
 
@@ -74,6 +79,31 @@ public class ReservaService {
 
         return response;
     }
+
+
+    //cancelar reserva o devolucion lo que sea jsjs
+    public void deleteReserve(CancelReserveRequest request){
+
+        Reserve reserve = reserveRepository.findById(request.getIdReserve()).orElseThrow();
+        
+        if(!reserve.getIdUser().equals(request.getIdUser())){
+            throw new IllegalArgumentException();   
+        }
+
+        for(ReserveDetails detail : reserve.getReserveDetails() ){
+
+        Product stockRecuperado = detail.getProduct();
+
+        stockRecuperado.setProductStock(stockRecuperado.getProductStock() + detail.getQuanty());
+
+        productRepository.save(stockRecuperado);
+    
+        }
+
+        reserveRepository.delete(reserve);
+        
+    }
+
 
      private boolean getUserById(Long id){
 
