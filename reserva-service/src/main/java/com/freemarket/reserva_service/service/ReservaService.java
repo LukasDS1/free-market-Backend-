@@ -3,6 +3,8 @@ package com.freemarket.reserva_service.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +19,8 @@ import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,7 +39,7 @@ public class ReservaService {
    
     public ReservaResponse createReserva(ReserveRequest request) {
 
-        if (!getUserById(request.getIdUser())) {
+        if (!getUserById(request.getIdUser()).join()) {
             throw new IllegalArgumentException();
         }
 
@@ -104,14 +108,19 @@ public class ReservaService {
         
     }
 
+    //implementacion time out + circuit breaker en llamada rest
+    @CircuitBreaker(name = "reservaService", fallbackMethod = "getUserByIdFallback")
+    @TimeLimiter(name = "reservaService") 
+    public CompletableFuture<Boolean> getUserById(Long id) {
+    String URL = "http://auth-service/api-v1/auth/{id}";
+    return CompletableFuture.supplyAsync(() ->
+        restTemplate.getForObject(URL, Boolean.class, id)
+    );
+}
 
-     private boolean getUserById(Long id){
-
-        String URL = "http://auth-service/api-v1/auth/{id}";
-
-        return restTemplate.getForObject( URL, boolean.class,id);
-    }
-
+public CompletableFuture<Boolean> getUserByIdFallback(Long id, Exception ex) {
+    return CompletableFuture.completedFuture(false);
+}
 
 
 }
