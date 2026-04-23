@@ -11,5 +11,7 @@ public class LocationRequest {
 
     public Long userId;
     public String address;
+    public String comuna;
+    public String region;
 
 }
