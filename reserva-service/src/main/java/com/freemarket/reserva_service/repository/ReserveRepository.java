@@ -8,4 +8,6 @@ import com.freemarket.reserva_service.model.Reserve;
 @Repository
 public interface ReserveRepository extends JpaRepository<Reserve,Long>{
 
+
+
 }

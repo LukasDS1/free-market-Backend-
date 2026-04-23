@@ -32,7 +32,7 @@ public class Reserve {
 
     @Column 
     (nullable = false,length = 50)
-    private Long reserveDate;
+    private Date reserveDate;
     
     @Column
     (nullable = false,length = 255)
