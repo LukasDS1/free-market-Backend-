@@ -1,23 +1,15 @@
 package com.freemarket.privileges_service.service;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.freemarket.privileges_service.model.Modulo;
 import com.freemarket.privileges_service.model.rolPrivileges;
 import com.freemarket.privileges_service.repository.ModuloRepository;
-import com.freemarket.privileges_service.repository.PrivilegesRepository;
 import com.freemarket.privileges_service.repository.RolPrivilegesRepository;
 import com.freemarket.privileges_service.request.moduloRequest;
 import com.freemarket.privileges_service.response.ResponseDTO;
 import com.freemarket.privileges_service.response.moduloResponse;
-
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,7 +19,7 @@ public class Services {
 
     private final ModuloRepository moduloRepository;
 
-    private final RestTemplate restTemplate;
+    private final RestService rest;
 
     private final RolPrivilegesRepository rolRepo;
 
@@ -47,29 +39,11 @@ public class Services {
     }
 
 
-@CircuitBreaker(name = "privilegesService", fallbackMethod = "validateRoleFallback")
-@TimeLimiter(name = "privilegesService")
-public CompletableFuture<Void> validateRoleExists(Long roleId) {
-    return CompletableFuture.supplyAsync(() -> {
-        restTemplate.getForObject(
-            "http://auth-service/api-v1/auth/role/" + roleId,
-            Object.class
-        );
-        return null; // Void
-    });
-}
-
-public CompletableFuture<Void> validateRoleFallback(Long roleId, Exception ex) {
-    CompletableFuture<Void> failed = new CompletableFuture<>();
-    failed.completeExceptionally(new IllegalArgumentException("Service is not avalible"));
-    return failed;
-}
-
 
 public List<ResponseDTO> getPrivilegesByRole(Long roleId) {
 
     try {
-        validateRoleExists(roleId).join();
+        rest.validateRoleExists(roleId);
     } catch (Exception ex) {
         throw new IllegalArgumentException("Service is not avalible");
     }

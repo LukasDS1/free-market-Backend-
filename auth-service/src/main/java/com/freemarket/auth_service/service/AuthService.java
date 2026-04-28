@@ -72,17 +72,25 @@ public class AuthService {
            user2.setGenre(user.getGenre().toUpperCase());
            passwordEmpty(user.getPassword());
            user2.setPassword(passwordEncoder.encode(user.getPassword()));
-           rolValidtationOk(user.getRol());
-           user2.setRol(user.getRol());
+           user2.setRol(getRolCompleto(user.getRol()));
            user2.setStateId(1L);
-           userRespository.save(user2);
+
+           User savedUser = userRespository.save(user2);
+
+           User fullUser = userRespository.findById(savedUser.getUserId()).orElseThrow();
+
            return AuthResponse.builder()
-           .token(jwtService.getToken(user2)).build();
+           .token(jwtService.getToken(fullUser)).build();
 
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException();
         }
     }
+
+    private Rol getRolCompleto(Rol rol) {
+    return rolRepository.findById(rol.getRolId())
+        .orElseThrow(() -> new IllegalArgumentException());
+}
 
 //Conexion con rest
 //implementacion de TIME OUT + CIRCUIT BREAKER
@@ -167,14 +175,6 @@ public CompletableFuture<String> getStateFallback(Long userId, Exception ex){
         }
     }
 
-
-//Validacionds de rol
-
-    //metodo para validacion de Rol
-    private void rolValidtationOk(Rol rol){
-        rolRepository.findById(rol.getRolId()).orElseThrow(() -> new IllegalArgumentException());
-
-    }
 
 
 
