@@ -28,29 +28,17 @@ public class ConfigController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createConfig(@RequestBody ConfigRequest request) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(configService.createConfiguration(request));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+    return ResponseEntity.status(HttpStatus.CREATED).body(configService.createConfiguration(request));
     }
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<?> updateConfig(@PathVariable Long id, @RequestBody ConfigRequest request){
-        try {
-            return ResponseEntity.ok().body(configService.updateConfiguration(id,request));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+    return ResponseEntity.ok().body(configService.updateConfiguration(id,request));
     }
 
     @GetMapping("/get/{id}")
-public ResponseEntity<ConfigResponse> getConfigurationByIdUser(@PathVariable Long id) {
- try {
-            return ResponseEntity.ok().body(configService.getConfigurationByIdUser(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-}
+    public ResponseEntity<ConfigResponse> getConfigurationByIdUser(@PathVariable Long id){
+    return ResponseEntity.ok().body(configService.getConfigurationByIdUser(id));
+    }
 
 }

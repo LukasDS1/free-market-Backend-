@@ -54,5 +54,4 @@ public class Configuration {
     @Column 
     (nullable = false)
     private Date updateAt ;
-
 }

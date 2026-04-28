@@ -2,17 +2,11 @@ package com.freemarket.config_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
 import com.freemarket.config_service.response.ConfigResponse;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,12 +15,12 @@ public class configService {
 
     private final ConfigRepository configRepo;
 
-    private final RestTemplate restTemplate;
+    private final RestService rest;
 
 
     public ConfigResponse createConfiguration(ConfigRequest request){
 
-        if(!getUserById(request.getIdUser()).join()){
+        if(!rest.getUserById(request.getIdUser())){
             throw new IllegalArgumentException();
         }
 
@@ -76,7 +70,7 @@ public class configService {
     //update
     public ConfigResponse updateConfiguration(Long idUser, ConfigRequest request) {
 
-    if (!getUserById(idUser).join()) {
+    if (!rest.getUserById(idUser)) {
         throw new IllegalArgumentException();
     }
 
@@ -151,21 +145,6 @@ public ConfigResponse getConfigurationByIdUser(Long idUser) {
         }
     }
 
-
-
-    //implementacion time out + circuit breaker en llamada rest
-    @CircuitBreaker(name = "configService", fallbackMethod = "getUserByIdFallback")
-    @TimeLimiter(name = "configService") 
-    public CompletableFuture<Boolean> getUserById(Long id) {
-    String URL = "http://auth-service/api-v1/auth/{id}";
-    return CompletableFuture.supplyAsync(() ->
-        restTemplate.getForObject(URL, Boolean.class, id)
-    );
-}
-
-public CompletableFuture<Boolean> getUserByIdFallback(Long id, Exception ex) {
-    return CompletableFuture.completedFuture(false);
-}
 
     
 
