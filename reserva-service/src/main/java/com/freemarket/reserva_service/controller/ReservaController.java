@@ -26,22 +26,13 @@ public class ReservaController {
 
     @PostMapping("/createReserve")
     public ResponseEntity<ReservaResponse> createReserve(@RequestBody ReserveRequest request) {
-       try {
             return ResponseEntity.ok().body(reservaService.createReserva(request));
-       } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-       }
+      
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteReserva(@RequestBody CancelReserveRequest request  ) {
-       try {
             reservaService.deleteReserve(request);
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-       } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-       }
     }
-    
-
 }

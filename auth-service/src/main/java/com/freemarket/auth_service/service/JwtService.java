@@ -3,6 +3,7 @@ package com.freemarket.auth_service.service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -19,10 +20,17 @@ public class JwtService {
 
     private static final String SECRET_KEY = "VGhpc0lzQVNlY3VyZUtleUZvckpXVFdpdGhIbWFjU0hBMjU2IQ==";
 
-    public String getToken(UserDetails user){
-        return getToken(new HashMap<>(),user);
-
-    }
+   public String getToken(UserDetails user) {
+    Map<String, Object> extraClaims = new HashMap<>();
+    extraClaims.put("roles", user.getAuthorities().stream()
+        .map(authority -> authority.getAuthority())
+        .collect(java.util.stream.Collectors.toList()));
+    
+    return getToken(extraClaims, user);
+}
+public List<String> getRolesFromToken(String token) {
+    return getClaim(token, claims -> claims.get("roles", List.class));
+}
 
 
     private String getToken(Map <String,Object> extraClaims, UserDetails user) {

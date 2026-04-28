@@ -8,6 +8,8 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+
+import com.freemarket.reserva_service.exception.ServiceUnavailableException;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Reserve;
 import com.freemarket.reserva_service.model.ReserveDetails;
@@ -28,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservaService {
 
-    private final RestTemplate restTemplate;
+    private final AuthClientService authClientService;
 
     private final ReserveDetailsRepository reserveDetailsRepository;
 
@@ -39,7 +41,7 @@ public class ReservaService {
    
     public ReservaResponse createReserva(ReserveRequest request) {
 
-        if (!getUserById(request.getIdUser()).join()) {
+        if (!authClientService.getUserById(request.getIdUser())) {
             throw new IllegalArgumentException();
         }
 
@@ -108,19 +110,7 @@ public class ReservaService {
         
     }
 
-    //implementacion time out + circuit breaker en llamada rest
-    @CircuitBreaker(name = "reservaService", fallbackMethod = "getUserByIdFallback")
-    @TimeLimiter(name = "reservaService") 
-    public CompletableFuture<Boolean> getUserById(Long id) {
-    String URL = "http://auth-service/api-v1/auth/{id}";
-    return CompletableFuture.supplyAsync(() ->
-        restTemplate.getForObject(URL, Boolean.class, id)
-    );
-}
-
-public CompletableFuture<Boolean> getUserByIdFallback(Long id, Exception ex) {
-    return CompletableFuture.completedFuture(false);
-}
+ 
 
 
 }
