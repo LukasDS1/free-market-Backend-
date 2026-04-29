@@ -27,12 +27,7 @@ public class LocationController {
 
     @PostMapping("/createLocation")
     public ResponseEntity<LocationResponse> createLocation(@RequestBody LocationRequest request) {
-        try {
-             return ResponseEntity.ok().body(locationsService.createUserLocation(request)); 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build(); 
-        }
+    return ResponseEntity.ok().body(locationsService.createUserLocation(request)); 
     }
     
 

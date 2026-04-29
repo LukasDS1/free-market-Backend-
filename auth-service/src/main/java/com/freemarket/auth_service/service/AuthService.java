@@ -1,16 +1,11 @@
 package com.freemarket.auth_service.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -19,9 +14,6 @@ import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
-
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,7 +26,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RolRepository rolRepository;
-    private final RestTemplate restTemplate;
+    private final RestService rest;
 
 
     public AuthResponse login(LoginRequest request){
@@ -92,28 +84,6 @@ public class AuthService {
         .orElseThrow(() -> new IllegalArgumentException());
 }
 
-//Conexion con rest
-//implementacion de TIME OUT + CIRCUIT BREAKER
-
-
-@CircuitBreaker(name = "auhtService",fallbackMethod = "getStateFallback")
-@TimeLimiter(name = "auhtService" )
-public CompletableFuture<String> GetState(Long userId){
-
-        User user = userRespository.findById(userId).orElseThrow();
-
-        String URL = "http://state-service/api-v1/state/{id}";
-        
-
-        return CompletableFuture.supplyAsync(() -> restTemplate.getForObject(URL, String.class,user.getUserId()));
-    }
-
-
-
-//fallback pa cuando se abra el hilo
-public CompletableFuture<String> getStateFallback(Long userId, Exception ex){
-    return CompletableFuture.completedFuture("State is not avalible ");
-}
 /// Validaciones de email
     //Metodo para validacion de email en uso
     private void emailExists(String email){
@@ -174,9 +144,6 @@ public CompletableFuture<String> getStateFallback(Long userId, Exception ex){
         throw new IllegalArgumentException();
         }
     }
-
-
-
 
 
 // Acualizacion de usuario
