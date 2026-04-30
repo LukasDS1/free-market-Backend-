@@ -3,6 +3,8 @@ package com.freemarket.privileges_service.service;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+
+import com.freemarket.privileges_service.client.Client;
 import com.freemarket.privileges_service.model.Modulo;
 import com.freemarket.privileges_service.model.rolPrivileges;
 import com.freemarket.privileges_service.repository.ModuloRepository;
@@ -19,7 +21,7 @@ public class Services {
 
     private final ModuloRepository moduloRepository;
 
-    private final RestService rest;
+    private final Client rest;
 
     private final RolPrivilegesRepository rolRepo;
 
@@ -43,7 +45,7 @@ public class Services {
 public List<ResponseDTO> getPrivilegesByRole(Long roleId) {
 
     try {
-        rest.validateRoleExists(roleId);
+        rest.getRoleById(roleId);
     } catch (Exception ex) {
         throw new IllegalArgumentException("Service is not avalible");
     }

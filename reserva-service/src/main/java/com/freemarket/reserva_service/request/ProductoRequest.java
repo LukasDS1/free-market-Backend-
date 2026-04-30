@@ -13,6 +13,8 @@ public class ProductoRequest {
     
     public String name;
 
+     public String url;
+
     public int price;
 
     public int stock;

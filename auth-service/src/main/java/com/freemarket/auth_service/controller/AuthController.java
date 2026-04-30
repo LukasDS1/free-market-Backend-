@@ -2,6 +2,7 @@ package com.freemarket.auth_service.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.freemarket.auth_service.client.FeingClient;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.freemarket.auth_service.service.RolService;
-import com.freemarket.auth_service.service.RestService;
 
 
 @RestController
@@ -27,7 +27,7 @@ public class AuthController {
 
 private final AuthService authService;
 
-private final RestService restService;
+private final FeingClient feing;
 
 private final RolService rolservice;
 
@@ -67,7 +67,7 @@ public ResponseEntity<?> updateUser(@PathVariable Long id,@RequestBody UpdateReq
 
   @GetMapping("/state/{id}")
     public ResponseEntity<String> getUserState(@PathVariable Long id) {
-        return ResponseEntity.ok(restService.getState(id));
+        return ResponseEntity.ok(feing.getStateById(id));
     }
 
 @GetMapping("/role/{id}")

@@ -6,10 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
 import com.freemarket.locations_service.service.LocationsService;
-
 import lombok.AllArgsConstructor;
-import lombok.val;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

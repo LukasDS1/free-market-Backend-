@@ -2,14 +2,9 @@ package com.freemarket.reserva_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
-import com.freemarket.reserva_service.exception.ServiceUnavailableException;
+import com.freemarket.reserva_service.client.AuthClient;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Reserve;
 import com.freemarket.reserva_service.model.ReserveDetails;
@@ -21,8 +16,6 @@ import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservaService {
 
-    private final AuthClientService authClientService;
+    private final AuthClient authClient;
 
     private final ReserveDetailsRepository reserveDetailsRepository;
 
@@ -41,7 +34,7 @@ public class ReservaService {
    
     public ReservaResponse createReserva(ReserveRequest request) {
 
-        if (!authClientService.getUserById(request.getIdUser())) {
+        if (!authClient.getUserById(request.getIdUser())) {
             throw new IllegalArgumentException();
         }
 

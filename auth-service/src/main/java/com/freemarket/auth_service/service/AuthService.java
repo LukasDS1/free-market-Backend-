@@ -6,6 +6,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.freemarket.auth_service.client.FeingClient;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -26,7 +28,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RolRepository rolRepository;
-    private final RestService rest;
+
 
 
     public AuthResponse login(LoginRequest request){

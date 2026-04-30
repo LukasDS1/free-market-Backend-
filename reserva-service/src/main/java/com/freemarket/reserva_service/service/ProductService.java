@@ -36,6 +36,7 @@ public class ProductService {
         Provider provider = findOrCreateProvider(providerNombre);
         
         product.setProductname(request.getName());
+        product.setUrl(request.getUrl());
         product.setProductprice(request.getPrice());
         product.setProductStock(request.getStock());
         product.setProvider(provider);
@@ -62,6 +63,11 @@ public class ProductService {
         nameValidation(request.getName());
         product.setProductname(request.getName());
     }
+
+    if (request.getUrl() != null) {
+        product.setUrl(request.getUrl());
+    }
+
 
     if ( request.getPrice() > 0) {
         priceValidation(request.getPrice());

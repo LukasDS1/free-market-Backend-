@@ -3,6 +3,8 @@ package com.freemarket.config_service.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
+
+import com.freemarket.config_service.client.AuthClient;
 import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
@@ -15,7 +17,7 @@ public class configService {
 
     private final ConfigRepository configRepo;
 
-    private final RestService rest;
+    private final AuthClient rest;
 
 
     public ConfigResponse createConfiguration(ConfigRequest request){

@@ -1,13 +1,8 @@
 package com.freemarket.locations_service.service;
 
-import java.util.concurrent.CompletableFuture;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import com.freemarket.locations_service.DTO.MapsDTO;
+import com.freemarket.locations_service.client.AuthClient;
 import com.freemarket.locations_service.model.Comuna;
 import com.freemarket.locations_service.model.Location;
 import com.freemarket.locations_service.model.Region;
@@ -16,9 +11,6 @@ import com.freemarket.locations_service.repository.LocationRepository;
 import com.freemarket.locations_service.repository.RegionRepository;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
-
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,7 +21,7 @@ public class LocationsService {
     private final GoogleMapsService mapService;
     private final ComunaRepository comunaRepo;
     private final RegionRepository regionRepo;
-    private final AuthClientService authClientService; 
+    private final AuthClient authClientService; 
 
     public LocationResponse createUserLocation(LocationRequest request) {
         validationAddress(request.getAddress());
