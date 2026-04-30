@@ -3,13 +3,13 @@ package com.freemarket.auth_service.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.freemarket.auth_service.client.FeingClient;
+import com.freemarket.auth_service.exception.ServiceUnavailableException;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,68 +26,42 @@ import com.freemarket.auth_service.service.RolService;
 public class AuthController {
 
 private final AuthService authService;
+    private final FeingClient feingClient;
+    private final RolService rolService;
 
-private final FeingClient feing;
-
-private final RolService rolservice;
-
-
-@PostMapping("/register")
-public ResponseEntity<?> createUser(@RequestBody RegisterRequest user) {
-    try {
-        AuthResponse response = authService.registerUser(user);
-        return ResponseEntity.ok(response); 
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().build();
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> createUser(@RequestBody RegisterRequest user) {
+        return ResponseEntity.ok(authService.registerUser(user));
     }
-}
 
-
- @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-    try {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response); 
-    } catch (Exception e) {
-        return ResponseEntity .status(HttpStatus.UNAUTHORIZED).build();
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
-}
 
-
-@PatchMapping("/update/{id}")
-public ResponseEntity<?> updateUser(@PathVariable Long id,@RequestBody UpdateRequest user){
-    try {
-        authService.UpdateUser(id,user);
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<Void> updateUser(@PathVariable Long id, @RequestBody UpdateRequest user) {
+        authService.UpdateUser(id, user);
         return ResponseEntity.ok().build();
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-}
-
-  @GetMapping("/state/{id}")
+    @GetMapping("/state/{id}")
     public ResponseEntity<String> getUserState(@PathVariable Long id) {
-        return ResponseEntity.ok(feing.getStateById(id));
+        String state = feingClient.getStateById(id);
+        if (state == null) {
+            throw new ServiceUnavailableException("state-service no disponible");
+        }
+        return ResponseEntity.ok(state);
     }
 
-@GetMapping("/role/{id}")
-public ResponseEntity<?> GetRolID(@PathVariable Long id) {
-    try {
-        return ResponseEntity.ok().body(rolservice.findRolById(id));
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().build();
-    
+    @GetMapping("/role/{id}")
+    public ResponseEntity<?> getRolById(@PathVariable Long id) {
+        return ResponseEntity.ok(rolService.findRolById(id));
     }
-}
 
-@GetMapping("/{id}")
-public ResponseEntity<?> getById(@PathVariable Long id) {
-     try {
-        return ResponseEntity.ok().body(authService.getByid(id));
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().build();
-    
+    @GetMapping("/{id}")
+    public ResponseEntity<Boolean> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getByid(id));
     }
-}
 
 }

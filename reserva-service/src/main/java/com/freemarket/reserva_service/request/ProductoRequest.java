@@ -15,9 +15,9 @@ public class ProductoRequest {
 
      public String url;
 
-    public int price;
+    public Integer price;
 
-    public int stock;
+    public Integer stock;
 
 
 

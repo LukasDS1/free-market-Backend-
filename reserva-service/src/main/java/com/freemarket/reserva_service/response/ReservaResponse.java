@@ -13,7 +13,7 @@ public class ReservaResponse {
 
     public Long idReserva;
     public Date reserveDate;
-    public int totalPrice;
+    public Integer totalPrice;
 
 
     

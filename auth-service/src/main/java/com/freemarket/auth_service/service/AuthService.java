@@ -6,8 +6,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.freemarket.auth_service.client.FeingClient;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -50,9 +48,9 @@ public class AuthService {
     }
 
     public AuthResponse registerUser(RegisterRequest user){
+
         
         User user2 = new User();
-        try {
            emailExists(user.getEmail());
            emailEmpty(user.getEmail());
            user2.setEmail(user.getEmail());
@@ -75,10 +73,6 @@ public class AuthService {
 
            return AuthResponse.builder()
            .token(jwtService.getToken(fullUser)).build();
-
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException();
-        }
     }
 
     private Rol getRolCompleto(Rol rol) {

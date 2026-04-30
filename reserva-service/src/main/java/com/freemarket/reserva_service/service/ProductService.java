@@ -57,7 +57,7 @@ public class ProductService {
     //ACTUALIZAR PRODUCTO
 
     public ProductoResponse updateProduct(Long id, ProductoRequest request) {
-    Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException());
+    Product product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
     
     if (request.getName() != null) {
         nameValidation(request.getName());
@@ -69,12 +69,12 @@ public class ProductService {
     }
 
 
-    if ( request.getPrice() > 0) {
+    if ( request.getPrice() != null) {
         priceValidation(request.getPrice());
         product.setProductprice(request.getPrice());
     }
 
-    if (request.getStock() > 0) {
+    if (request.getStock() != null) {
         stockValidation(request.getStock());
         product.setProductStock(request.getStock());
     }
@@ -105,34 +105,37 @@ public class ProductService {
 
     //Eliminar Producto por id
     public void deleteProductById(Long id){
-        productRepository.deleteById(id);
+         if (!productRepository.existsById(id)) {
+        throw new IllegalArgumentException("Producto no encontrado");
+    }
+    productRepository.deleteById(id);
     }
 
     //validaciones
 
     public void nameValidation(String name){
         if(name == null || name.isEmpty()){
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("El nombre no puede estar vacio");
         }
 
     }
 
     public void proovedorValidation(String name){
         if(name == null || name.isEmpty()){
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("El nombre del prooveedor no puede estar vacio");
         }
 
     }
 
     public void priceValidation(int price){
         if(price <= 0 || price == 0){
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("El precio no pede ser menor a 0 y/o 0");
         }
     }
 
      public void stockValidation(int stock){
-        if(stock <= 0 ){
-            throw new IllegalArgumentException();
+        if(stock < 0 ){
+            throw new IllegalArgumentException("El stock no puede ser menor a 0");
         }
     }
 

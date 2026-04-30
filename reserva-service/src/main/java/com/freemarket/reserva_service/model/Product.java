@@ -37,11 +37,11 @@ public class Product {
     
     @Column 
     (nullable = false,length = 50)
-    private int productprice;
+    private Integer productprice;
 
     @Column 
     (nullable = false,length = 50)
-    private int productStock;
+    private Integer productStock;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idReserveDetails")

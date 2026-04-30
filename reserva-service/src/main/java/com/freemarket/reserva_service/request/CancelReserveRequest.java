@@ -1,5 +1,4 @@
 package com.freemarket.reserva_service.request;
-import java.util.List;
 
 
 import lombok.AllArgsConstructor;

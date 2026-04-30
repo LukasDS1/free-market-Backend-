@@ -20,4 +20,16 @@ public class GlobalExceptionHandler {
             .body(ex.getMessage());
     }
 
+      @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    
+    @ExceptionHandler(io.github.resilience4j.circuitbreaker.CallNotPermittedException.class)
+    public ResponseEntity<String> handleCircuitBreakerOpen(
+            io.github.resilience4j.circuitbreaker.CallNotPermittedException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Service is not disponible yet");
+    }
+
 }

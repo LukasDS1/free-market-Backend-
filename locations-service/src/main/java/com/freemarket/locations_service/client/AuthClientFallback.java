@@ -11,7 +11,7 @@ public class AuthClientFallback implements AuthClient {
      @Override
     public Boolean getUserById(Long id) {
         log.warn("auth-service no disponible, fallback para id: {}", id);
-        return false;
+        return null;
     }
 
 }

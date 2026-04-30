@@ -3,6 +3,7 @@ package com.freemarket.locations_service.service;
 import org.springframework.stereotype.Service;
 import com.freemarket.locations_service.DTO.MapsDTO;
 import com.freemarket.locations_service.client.AuthClient;
+import com.freemarket.locations_service.excepcion.ServiceUnavailableException;
 import com.freemarket.locations_service.model.Comuna;
 import com.freemarket.locations_service.model.Location;
 import com.freemarket.locations_service.model.Region;
@@ -27,11 +28,14 @@ public class LocationsService {
         validationAddress(request.getAddress());
         validationComuna(request.getComuna());
         validationRegion(request.getRegion());
-
-        if (!authClientService.getUserById(request.getUserId())) {
-            throw new IllegalArgumentException("Usuario no encontrado");
-        }
-
+        
+        Boolean userExists = authClientService.getUserById(request.getUserId());
+    if (userExists == null) {
+        throw new ServiceUnavailableException("Service is unavalible");
+    }
+    if (!userExists) {
+        throw new IllegalArgumentException("Usuario no encontrado");
+    }
 
         MapsDTO map = mapService.geocode(request.getAddress());
 
@@ -73,11 +77,11 @@ public class LocationsService {
 
     public LocationResponse updateLocation(LocationRequest request) {
         Location location = locationRepo.findByUserId(request.getUserId())
-            .orElseThrow(() -> new RuntimeException());
+            .orElseThrow(() -> new IllegalArgumentException("Locacion not Found"));
 
         if (request.getAddress() != null && !request.getAddress().isEmpty()) {
             validationAddress(request.getAddress());
-            MapsDTO map = mapService.geocode(request.getAddress()); // ← sin .join()
+            MapsDTO map = mapService.geocode(request.getAddress()); 
             location.setStreetAddress(map.getFormattedAddress());
             location.setLatitude(map.getLatitude());
             location.setLongitud(map.getLongitude());
@@ -123,15 +127,15 @@ public class LocationsService {
     }
 
     public void validationAddress(String address) {
-        if (address == null || address.isEmpty()) throw new IllegalArgumentException();
+        if (address == null || address.isEmpty()) throw new IllegalArgumentException("Addres no puede estar vacio");
     }
 
     public void validationComuna(String comuna) {
-        if (comuna == null || comuna.isEmpty()) throw new IllegalArgumentException();
+        if (comuna == null || comuna.isEmpty()) throw new IllegalArgumentException("comuna no puede estar vasia");
     }
 
     public void validationRegion(String region) {
-        if (region == null || region.isEmpty()) throw new IllegalArgumentException();
+        if (region == null || region.isEmpty()) throw new IllegalArgumentException("region no puede estar vacio");
     }
 
 

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.freemarket.privileges_service.client.Client;
+import com.freemarket.privileges_service.exception.ServiceUnavailableException;
 import com.freemarket.privileges_service.model.Modulo;
 import com.freemarket.privileges_service.model.rolPrivileges;
 import com.freemarket.privileges_service.repository.ModuloRepository;
@@ -29,7 +30,7 @@ public class Services {
     public moduloResponse createModulo(moduloRequest request) {
 
         if (moduloRepository.findByModuloname(request.getModuloname())) {
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Modulo con nombre "+request.getModuloname()+" ya existe");
     }
 
     Modulo modulo = new Modulo();
@@ -44,13 +45,18 @@ public class Services {
 
 public List<ResponseDTO> getPrivilegesByRole(Long roleId) {
 
-    try {
-        rest.getRoleById(roleId);
-    } catch (Exception ex) {
-        throw new IllegalArgumentException("Service is not avalible");
+    Boolean exist = rest.getRoleById(roleId);
+
+    if(exist == null){
+        throw new ServiceUnavailableException("Service is not avalible,try again later");
+    }
+
+    if(!exist){
+        throw new IllegalArgumentException("Rol no encontrado");
     }
 
     List<rolPrivileges> list = rolRepo.findByRoleId(roleId);
+    
 
     return list.stream()
         .map(rp -> new ResponseDTO(
