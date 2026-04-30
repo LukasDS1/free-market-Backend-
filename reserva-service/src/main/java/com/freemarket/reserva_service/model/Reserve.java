@@ -36,7 +36,7 @@ public class Reserve {
     
     @Column
     (nullable = false,length = 255)
-    private int totalPrice;    
+    private Integer totalPrice;    
 
     @OneToMany(mappedBy = "reserve", cascade = CascadeType.ALL)
     @JsonIgnore

@@ -19,5 +19,27 @@ public class GlobalExceptionHanlder {
             .body(ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(io.github.resilience4j.circuitbreaker.CallNotPermittedException.class)
+    public ResponseEntity<String> handleCircuitBreakerOpen(
+            io.github.resilience4j.circuitbreaker.CallNotPermittedException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Service is not avalible yet, try again later");
+    }
+
+    // ✅ Faltaba: login con credenciales incorrectas
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<String> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
+    }
 
 }
+
+
+
+

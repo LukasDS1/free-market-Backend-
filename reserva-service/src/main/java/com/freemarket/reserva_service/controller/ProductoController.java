@@ -29,44 +29,29 @@ public class ProductoController {
 
     @PostMapping("/create")
     public ResponseEntity<ProductoResponse> createProduct(@RequestBody ProductoRequest request) {
-        try {
-            return ResponseEntity.ok().body(productService.createProduct(request));
-        } catch (Exception e) {
-           return ResponseEntity.badRequest().build();
 
-        }
+        return ResponseEntity.ok().body(productService.createProduct(request));
+       
     }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok().body(productService.getProductById(id));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok().body(productService.getProductById(id));
+    
     
     }
 
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<ProductoResponse> updateProduct(@RequestBody ProductoRequest request, @PathVariable Long id) {
-    try {
         return ResponseEntity.ok().body(productService.updateProduct(id, request));
-    } catch (RuntimeException e) {
-        System.err.println( e.getMessage());
-        return ResponseEntity.badRequest().build();
-    }
 }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id){
-        try {
+   
              productService.deleteProductById(id);
              return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-        }
 
     }
 

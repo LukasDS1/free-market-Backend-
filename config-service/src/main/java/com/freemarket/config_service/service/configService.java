@@ -3,6 +3,9 @@ package com.freemarket.config_service.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
+
+import com.freemarket.config_service.client.AuthClient;
+import com.freemarket.config_service.exception.ServiceUnavailableException;
 import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
@@ -15,12 +18,18 @@ public class configService {
 
     private final ConfigRepository configRepo;
 
-    private final RestService rest;
+    private final AuthClient rest;
 
 
     public ConfigResponse createConfiguration(ConfigRequest request){
 
-        if(!rest.getUserById(request.getIdUser())){
+        Boolean exist = rest.getUserById(request.getIdUser());
+
+        if(exist == null){
+            throw new ServiceUnavailableException("Service is not avalible");
+        }
+
+        if(!exist){
             throw new IllegalArgumentException();
         }
 
@@ -69,10 +78,15 @@ public class configService {
 
     //update
     public ConfigResponse updateConfiguration(Long idUser, ConfigRequest request) {
+        Boolean exist = rest.getUserById(request.getIdUser());
 
-    if (!rest.getUserById(idUser)) {
-        throw new IllegalArgumentException();
-    }
+        if(exist == null){
+            throw new ServiceUnavailableException("Service is not avalible");
+        }
+
+        if(!exist){
+            throw new IllegalArgumentException();
+        }
 
     Configuration config = configRepo.findByIdUser(idUser)
         .orElseThrow(() -> new IllegalStateException());

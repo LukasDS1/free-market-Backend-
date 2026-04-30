@@ -26,7 +26,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RolRepository rolRepository;
-    private final RestService rest;
+
 
 
     public AuthResponse login(LoginRequest request){
@@ -48,9 +48,9 @@ public class AuthService {
     }
 
     public AuthResponse registerUser(RegisterRequest user){
+
         
         User user2 = new User();
-        try {
            emailExists(user.getEmail());
            emailEmpty(user.getEmail());
            user2.setEmail(user.getEmail());
@@ -73,10 +73,6 @@ public class AuthService {
 
            return AuthResponse.builder()
            .token(jwtService.getToken(fullUser)).build();
-
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException();
-        }
     }
 
     private Rol getRolCompleto(Rol rol) {

@@ -2,14 +2,11 @@ package com.freemarket.reserva_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
+import com.freemarket.reserva_service.client.AuthClient;
 import com.freemarket.reserva_service.exception.ServiceUnavailableException;
+import com.freemarket.reserva_service.messaging.ReservaEventPublisher;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Reserve;
 import com.freemarket.reserva_service.model.ReserveDetails;
@@ -21,8 +18,6 @@ import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservaService {
 
-    private final AuthClientService authClientService;
+    private final AuthClient authClient;
 
     private final ReserveDetailsRepository reserveDetailsRepository;
 
@@ -38,11 +33,19 @@ public class ReservaService {
 
     private final ProductRepository productRepository;
 
+    private final ReservaEventPublisher eventPublisher;
+
    
     public ReservaResponse createReserva(ReserveRequest request) {
 
-        if (!authClientService.getUserById(request.getIdUser())) {
-            throw new IllegalArgumentException();
+        Boolean exist = authClient.getUserById(request.getIdUser());
+
+        if(exist == null){
+            throw new ServiceUnavailableException("Service is not avalible");
+        }
+
+        if (!exist) {
+            throw new IllegalArgumentException("User not Found");
         }
 
         Reserve reserve = new Reserve();
@@ -56,10 +59,10 @@ public class ReservaService {
         for (ProductItemRequest item : request.getProducts()) {
 
             Product product = productRepository.findById(item.getIdProduct())
-                .orElseThrow(() -> new IllegalArgumentException());
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
             if (product.getProductStock() < item.getQuantity()) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("No hay suficientes productos");
             }
             
             product.setProductStock(product.getProductStock() - item.getQuantity());
@@ -78,6 +81,9 @@ public class ReservaService {
         savedReserve.setTotalPrice(total);
         reserveRepository.save(savedReserve);
 
+        eventPublisher.publishReservaCreated(savedReserve.getIdReserva());     
+
+
         ReservaResponse response = new ReservaResponse();
         response.setIdReserva(savedReserve.getIdReserva());
         response.setReserveDate(savedReserve.getReserveDate());
@@ -93,7 +99,7 @@ public class ReservaService {
         Reserve reserve = reserveRepository.findById(request.getIdReserve()).orElseThrow();
         
         if(!reserve.getIdUser().equals(request.getIdUser())){
-            throw new IllegalArgumentException();   
+            throw new IllegalArgumentException("La id del usuario no coincide con la id de la reserva");   
         }
 
         for(ReserveDetails detail : reserve.getReserveDetails() ){
@@ -107,6 +113,9 @@ public class ReservaService {
         }
 
         reserveRepository.delete(reserve);
+
+        eventPublisher.publishReservaCancelled(request.getIdReserve()); 
+
         
     }
 

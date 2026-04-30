@@ -21,4 +21,19 @@ public class GlobalExceptionHandler {
             .body(ex.getMessage());
     }
 
+
+    @ExceptionHandler(io.github.resilience4j.circuitbreaker.CallNotPermittedException.class)
+    public ResponseEntity<String> handleCircuitBreakerOpen(
+            io.github.resilience4j.circuitbreaker.CallNotPermittedException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Servicio temporalmente no disponible, intente más tarde");
+    }
+
+    @ExceptionHandler(org.springframework.web.client.RestClientException.class)
+    public ResponseEntity<String> handleRestClient(
+            org.springframework.web.client.RestClientException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Error al conectar con el servicio de mapas");
+    }
+
 }

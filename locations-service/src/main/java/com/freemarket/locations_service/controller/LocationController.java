@@ -6,11 +6,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
 import com.freemarket.locations_service.service.LocationsService;
-
 import lombok.AllArgsConstructor;
-import lombok.val;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -28,6 +26,11 @@ public class LocationController {
     @PostMapping("/createLocation")
     public ResponseEntity<LocationResponse> createLocation(@RequestBody LocationRequest request) {
     return ResponseEntity.ok().body(locationsService.createUserLocation(request)); 
+    }
+    
+    @PatchMapping("/updateLocation")
+    public ResponseEntity<LocationResponse> updateLocation(@RequestBody LocationRequest request) {
+        return ResponseEntity.ok(locationsService.updateLocation(request));
     }
     
 

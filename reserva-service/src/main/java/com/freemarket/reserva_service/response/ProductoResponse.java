@@ -17,9 +17,9 @@ public class ProductoResponse {
     
     public String name;
 
-    public int price;
+    public Integer price;
 
-    public int stock;
+    public Integer stock;
 
 
     
