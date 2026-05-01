@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    @Bean
+
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService,UserDetailsService userDetailsService) {
     return new JwtAuthenticationFilter(jwtService, userDetailsService);
 }
