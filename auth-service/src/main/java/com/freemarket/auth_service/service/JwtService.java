@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,7 +39,7 @@ public List<String> getRolesFromToken(String token) {
       .builder().setClaims(extraClaims)
       .setSubject(user.getUsername())
       .setIssuedAt(new Date(System.currentTimeMillis()))
-      .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
+      .setExpiration(new Date(System.currentTimeMillis()+1000*60*15))
       .signWith(getKey(),SignatureAlgorithm.HS256)
       .compact();
     }
@@ -81,6 +82,10 @@ public List<String> getRolesFromToken(String token) {
      private boolean isTokenExpired(String token){
       return getExpiration(token).before(new Date());
 
+     }
+
+     public String generateRefreshToken() {
+     return UUID.randomUUID().toString();
      }
 
 
