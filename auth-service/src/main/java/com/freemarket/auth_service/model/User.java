@@ -1,5 +1,6 @@
 package com.freemarket.auth_service.model;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +61,12 @@ public class User implements UserDetails {
     @Column
     (nullable = false, length = 20)
     private  Long stateId;
+
+    @Column(nullable = true)
+    private String refreshToken;
+
+    @Column(nullable = true)
+    private Instant refreshTokenExpiry;
 
 
     @ManyToOne(fetch = FetchType.EAGER)

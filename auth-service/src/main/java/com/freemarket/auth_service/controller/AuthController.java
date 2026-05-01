@@ -10,6 +10,9 @@ import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,4 +67,14 @@ private final AuthService authService;
         return ResponseEntity.ok(authService.getByid(id));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody Map<String, String> body) {
+    return ResponseEntity.ok(authService.refresh(body.get("refreshToken")));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody Map<String, String> body) {
+    authService.logout(body.get("refreshToken"));
+    return ResponseEntity.ok().build();
+    }
 }

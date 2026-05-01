@@ -1,5 +1,6 @@
 package com.freemarket.auth_service.service;
 
+import java.time.Instant;
 import java.util.List;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,14 +30,11 @@ public class AuthService {
 
 
 
-    public AuthResponse login(LoginRequest request){
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        UserDetails user = userRespository.findByUsername(request.getUsername()).orElseThrow();
-        String token = jwtService.getToken(user);
-        return AuthResponse.builder()
-        .token(token)
-        .build();
-    }
+    public AuthResponse login(LoginRequest request) {
+    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+    User user = userRespository.findByUsername(request.getUsername()).orElseThrow();
+    return buildAuthResponse(user);
+}
 
     public List<User> getAllUsers(){
        return userRespository.findAll();
@@ -71,13 +69,49 @@ public class AuthService {
 
            User fullUser = userRespository.findById(savedUser.getUserId()).orElseThrow();
 
-           return AuthResponse.builder()
-           .token(jwtService.getToken(fullUser)).build();
+          return buildAuthResponse(fullUser);
     }
 
     private Rol getRolCompleto(Rol rol) {
     return rolRepository.findById(rol.getRolId())
         .orElseThrow(() -> new IllegalArgumentException());
+}
+
+
+public AuthResponse refresh(String refreshToken) {
+    User user = userRespository.findByRefreshToken(refreshToken)
+        .orElseThrow(() -> new IllegalArgumentException("Refresh token inválido"));
+
+    if (user.getRefreshTokenExpiry().isBefore(Instant.now())) {
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiry(null);
+        userRespository.save(user);
+        throw new IllegalArgumentException("Refresh token expirado");
+    }
+
+    return buildAuthResponse(user); 
+}
+
+public void logout(String refreshToken) {
+    userRespository.findByRefreshToken(refreshToken).ifPresent(user -> {
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiry(null);
+        userRespository.save(user);
+    });
+}
+
+private AuthResponse buildAuthResponse(User user) {
+    String accessToken = jwtService.getToken(user);
+    String refreshToken = jwtService.generateRefreshToken();
+
+    user.setRefreshToken(refreshToken);
+    user.setRefreshTokenExpiry(Instant.now().plusSeconds(60 * 60 * 24 * 7)); 
+    userRespository.save(user);
+
+    return AuthResponse.builder()
+        .token(accessToken)
+        .refreshToken(refreshToken)
+        .build();
 }
 
 /// Validaciones de email
