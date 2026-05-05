@@ -21,7 +21,6 @@ public class DeliveryController {
 
     private final DeliveryService deliveryService;
 
-    // El frontend consulta el estado de su delivery por reserva
     @GetMapping("/reserva/{idReserva}")
     public ResponseEntity<Delivery> getDelivery(@PathVariable Long idReserva) {
         return ResponseEntity.ok(deliveryService.getReserva(idReserva));

@@ -28,23 +28,6 @@ public class LoadDataBase {
                 state INACTIVO = new state(null,"INACTIVO","Estado Inactivo");
                 stateRepo.save(INACTIVO);
 
-                deliveryState PREPARACION = new deliveryState(null,"EN PREPARACION","Estado de preparacion");
-                DeliveryRepo.save(PREPARACION);
-
-                deliveryState ENVIADO = new deliveryState(null,"ENVIADO","Enviado");
-                DeliveryRepo.save(ENVIADO);
-
-                deliveryState ENTREGADO = new deliveryState(null,"ENTREGADO","Entregado");
-                DeliveryRepo.save(ENTREGADO);
-
-
-                reserveState RESERVAOK = new reserveState(null, "RESERVADO", "RESERVADO");
-                ReserveRepo.save(RESERVAOK);
-
-                
-                reserveState RESERVAENESPERA = new reserveState(null, "RESERVA EN ESPERA", "NO RESERVADO YET");
-                ReserveRepo.save(RESERVAENESPERA);
-
             }else{
                 System.out.println("Datos ya existen. No se cargaron.");
             }
