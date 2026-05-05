@@ -2,17 +2,13 @@ package com.freemarket.auth_service.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.freemarket.auth_service.client.FeingClient;
-import com.freemarket.auth_service.exception.ServiceUnavailableException;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
-
 import java.util.Map;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +25,14 @@ import com.freemarket.auth_service.service.RolService;
 public class AuthController {
 
 private final AuthService authService;
-    private final FeingClient feingClient;
     private final RolService rolService;
+
+    @PatchMapping("/setState/{id}")
+    public ResponseEntity<?> setState(@PathVariable Long id) {
+        authService.setUserState(id);
+        return ResponseEntity.ok().build();
+    }
+
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> createUser(@RequestBody RegisterRequest user) {
@@ -48,19 +50,10 @@ private final AuthService authService;
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/state/{id}")
-    public ResponseEntity<String> getUserState(@PathVariable Long id) {
-        String state = feingClient.getStateById(id);
-        if (state == null) {
-            throw new ServiceUnavailableException("state-service no disponible");
-        }
-        return ResponseEntity.ok(state);
-    }
-
     @GetMapping("/role/{id}")
-    public ResponseEntity<?> getRolById(@PathVariable Long id) {
-        return ResponseEntity.ok(rolService.findRolById(id));
-    }
+    public ResponseEntity<Boolean> getRolById(@PathVariable Long id) {
+    return ResponseEntity.ok(rolService.existById(id));
+}
 
     @GetMapping("/{id}")
     public ResponseEntity<Boolean> getById(@PathVariable Long id) {

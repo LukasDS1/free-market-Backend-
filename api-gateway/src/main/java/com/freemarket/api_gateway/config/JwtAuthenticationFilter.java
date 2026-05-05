@@ -4,18 +4,29 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.freemarket.api_gateway.DTO.ResponseDTO;
+
 import reactor.core.publisher.Mono;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
@@ -28,65 +39,114 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         "/api-v1/auth/logout"
     );
 
+    private static final Map<String, String> ROUTE_PRIVILEGES = Map.of(
+        "POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE",
+        "PATCH:/api-v1/reserve/cancel",          "UPDATE_RESERVE",
+        "GET:/api-v1/reserve",                   "READ_RESERVE",
+        "POST:/api-v1/productos",                "CREATE_PRODUCT",
+        "GET:/api-v1/productos",                 "READ_PRODUCT",
+        "PATCH:/api-v1/productos",               "UPDATE_PRODUCT",
+        "DELETE:/api-v1/productos",              "DELETE_PRODUCT",
+        "PATCH:/api-v1/auth/update",             "UPDATE_USER"
+    );
+
+    private final WebClient webClient;
+    private final ReactiveCircuitBreaker circuitBreaker;
+
+    public JwtAuthenticationFilter(
+            @Qualifier("loadBalancedBuilder") WebClient.Builder webClientBuilder,
+            ReactiveCircuitBreakerFactory<?, ?> cbFactory) { 
+        this.webClient = webClientBuilder.baseUrl("http://privileges-service").build();
+        this.circuitBreaker = cbFactory.create("privileges-service"); 
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
+        String method = exchange.getRequest().getMethod().name();
 
-        // Si es ruta pública, dejar pasar
         if (PUBLIC_ROUTES.stream().anyMatch(path::startsWith)) {
             return chain.filter(exchange);
         }
 
-        // Verificar que viene el header Authorization
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        String token = authHeader.substring(7);
-
         try {
-            Claims claims = getClaims(token);
+            Claims claims = getClaims(authHeader.substring(7));
 
-            // Verificar expiración
             if (claims.getExpiration().before(new Date())) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
-            // Agregar username y roles como headers para los microservicios
             String username = claims.getSubject();
             List<String> roles = claims.get("roles", List.class);
+            Long roleId = claims.get("roleId", Long.class);
 
-            exchange = exchange.mutate()
+            String requiredPrivilege = ROUTE_PRIVILEGES.entrySet().stream()
+                .filter(e -> e.getKey().startsWith(method + ":") &&
+                             path.startsWith(e.getKey().split(":")[1]))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
+
+            ServerWebExchange mutatedExchange = exchange.mutate()
                 .request(r -> r
                     .header("X-Username", username)
-                    .header("X-Roles", String.join(",", roles)))
+                    .header("X-Roles", String.join(",", roles))
+                    .header("X-Role-Id", String.valueOf(roleId)))
                 .build();
+
+            if (requiredPrivilege == null) {
+                return chain.filter(mutatedExchange);
+            }
+
+            String privilegeToCheck = requiredPrivilege;
+
+            return circuitBreaker.run(
+                webClient.get()
+                    .uri("/api-v1/privileges/role/" + roleId)
+                    .retrieve()
+                    .bodyToFlux(ResponseDTO.class)
+                    .collectList()
+                    .flatMap(privileges -> {
+                        boolean hasPrivilege = privileges.stream()
+                            .anyMatch(p -> p.getPrivilegeName().equals(privilegeToCheck));
+
+                        if (!hasPrivilege) {
+                            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                            return exchange.getResponse().setComplete();
+                        }
+
+                        return chain.filter(mutatedExchange);
+                    }),
+
+                // 👇 Fallback: circuito abierto o timeout
+                throwable -> {
+                    log.error("Fallback activado: {}", throwable.getClass().getName() + " - " + throwable.getMessage());
+                    exchange.getResponse().setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
+                    return exchange.getResponse().setComplete();
+                }
+            );
 
         } catch (Exception e) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
-
-        return chain.filter(exchange);
-    }
-
-    private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(getKey())
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
-    }
-
-    private Key getKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
     }
 
     @Override
-    public int getOrder() {
-        return -1; // Ejecutar antes que cualquier otro filtro
+    public int getOrder() { return -1; }
+
+    private Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY)))
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 }

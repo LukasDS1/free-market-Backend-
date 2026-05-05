@@ -4,9 +4,13 @@ import java.sql.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.freemarket.reserva_service.enums.ReserveStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +42,11 @@ public class Reserve {
     (nullable = false,length = 255)
     private Integer totalPrice;    
 
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReserveStatus  status = ReserveStatus.RESERVADO;
+    
     @OneToMany(mappedBy = "reserve", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<ReserveDetails> reserveDetails;

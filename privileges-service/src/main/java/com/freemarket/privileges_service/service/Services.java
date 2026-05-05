@@ -29,7 +29,7 @@ public class Services {
     
     public moduloResponse createModulo(moduloRequest request) {
 
-        if (moduloRepository.findByModuloname(request.getModuloname())) {
+        if (moduloRepository.existsByModuloname(request.getModuloname())) {
         throw new IllegalArgumentException("Modulo con nombre "+request.getModuloname()+" ya existe");
     }
 

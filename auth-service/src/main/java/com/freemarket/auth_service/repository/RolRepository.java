@@ -7,5 +7,7 @@ import com.freemarket.auth_service.model.Rol;
 
 @Repository
 public interface RolRepository extends JpaRepository<Rol,Long> {
+    boolean existsById (Long rolId);
+
 
 }

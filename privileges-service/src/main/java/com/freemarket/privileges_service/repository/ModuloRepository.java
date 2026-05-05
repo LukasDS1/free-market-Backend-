@@ -9,9 +9,8 @@ import com.freemarket.privileges_service.model.Modulo;
 @Repository
 public interface ModuloRepository extends JpaRepository<Modulo, Long>{
 
-    boolean findByModuloname(String moduloname);
-
-    boolean findByModuloId(Long moduloId);
+boolean existsByModuloname(String moduloname);
+boolean existsByModuloId(Long moduloId);
 
     
 

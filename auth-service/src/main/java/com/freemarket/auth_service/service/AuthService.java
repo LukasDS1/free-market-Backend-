@@ -7,6 +7,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.freemarket.auth_service.enums.UserEnums;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -63,8 +65,6 @@ public class AuthService {
            passwordEmpty(user.getPassword());
            user2.setPassword(passwordEncoder.encode(user.getPassword()));
            user2.setRol(getRolCompleto(user.getRol()));
-           user2.setStateId(1L);
-
            User savedUser = userRespository.save(user2);
 
            User fullUser = userRespository.findById(savedUser.getUserId()).orElseThrow();
@@ -210,6 +210,18 @@ private AuthResponse buildAuthResponse(User user) {
 
     userRespository.save(user2);
 
+    }
+
+    public void setUserState(Long idUser){
+        
+       User exist = userRespository.findById(idUser).orElseThrow(() ->  new IllegalArgumentException("User not found"));
+
+       if(exist.getStatus().equals(UserEnums.ACTIVO)){
+       exist.setStatus(UserEnums.INACTIVO);
+       } else {
+       exist.setStatus(UserEnums.ACTIVO);
+       }
+       userRespository.save(exist);
 
     }
 

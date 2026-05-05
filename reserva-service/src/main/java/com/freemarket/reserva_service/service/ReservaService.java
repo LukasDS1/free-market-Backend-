@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.freemarket.reserva_service.client.AuthClient;
+import com.freemarket.reserva_service.enums.ReserveStatus;
 import com.freemarket.reserva_service.exception.ServiceUnavailableException;
 import com.freemarket.reserva_service.messaging.ReservaEventPublisher;
 import com.freemarket.reserva_service.model.Product;
@@ -97,24 +98,25 @@ public class ReservaService {
     public void deleteReserve(CancelReserveRequest request){
 
         Reserve reserve = reserveRepository.findById(request.getIdReserve()).orElseThrow();
-        
-        if(!reserve.getIdUser().equals(request.getIdUser())){
-            throw new IllegalArgumentException("La id del usuario no coincide con la id de la reserva");   
-        }
-
-        for(ReserveDetails detail : reserve.getReserveDetails() ){
-
-        Product stockRecuperado = detail.getProduct();
-
-        stockRecuperado.setProductStock(stockRecuperado.getProductStock() + detail.getQuanty());
-
-        productRepository.save(stockRecuperado);
     
-        }
+    if(!reserve.getIdUser().equals(request.getIdUser())){
+        throw new IllegalArgumentException("La id del usuario no coincide con la id de la reserva");   
+    }
 
-        reserveRepository.delete(reserve);
+    if(reserve.getStatus().equals(ReserveStatus.CANCELADO)){
+        throw new IllegalArgumentException("La reserva ya está cancelada");
+    }
 
-        eventPublisher.publishReservaCancelled(request.getIdReserve()); 
+    for(ReserveDetails detail : reserve.getReserveDetails()){
+        Product stockRecuperado = detail.getProduct();
+        stockRecuperado.setProductStock(stockRecuperado.getProductStock() + detail.getQuanty());
+        productRepository.save(stockRecuperado);
+    }
+
+    reserve.setStatus(ReserveStatus.CANCELADO);
+    reserveRepository.save(reserve);
+
+    eventPublisher.publishReservaCancelled(request.getIdReserve()); 
 
         
     }

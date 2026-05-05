@@ -32,4 +32,10 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.updateStatus(idReserva, status));
     }
 
+    @PatchMapping("/reserva/{idReserva}/cancel")
+    public ResponseEntity<Void> cancelDelivery(@PathVariable Long idReserva) {
+    deliveryService.cancelDelivery(idReserva);
+    return ResponseEntity.ok().build();
+}
+
 }

@@ -20,4 +20,8 @@ public class RolService {
 
     }
 
+   public boolean existById(Long rolId){
+    return rolRepository.existsById(rolId);
+}
+
 }
