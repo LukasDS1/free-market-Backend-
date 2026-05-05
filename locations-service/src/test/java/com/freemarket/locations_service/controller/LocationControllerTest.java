@@ -1,0 +1,121 @@
+package com.freemarket.locations_service.controller;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.freemarket.locations_service.excepcion.GlobalExceptionHandler;
+import com.freemarket.locations_service.excepcion.ServiceUnavailableException;
+import com.freemarket.locations_service.request.LocationRequest;
+import com.freemarket.locations_service.response.LocationResponse;
+import com.freemarket.locations_service.service.LocationsService;
+
+@AutoConfigureMockMvc(addFilters = false)
+@WebMvcTest(LocationController.class)
+@Import(GlobalExceptionHandler.class)
+public class LocationControllerTest {
+    
+    @MockitoBean
+    private LocationsService locationsService;
+ 
+    @Autowired
+    private MockMvc mockMvc;
+ 
+    @Autowired
+    private ObjectMapper objectMapper;
+ 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+ 
+    private LocationRequest buildRequest() {
+        LocationRequest req = new LocationRequest();
+        req.setUserId(1L);
+        req.setAddress("Av. Siempre Viva 123");
+        req.setComuna("Santiago");
+        req.setRegion("Metropolitana");
+        return req;
+    }
+ 
+    private LocationResponse buildResponse() {
+        LocationResponse res = new LocationResponse();
+        res.setLocationId(1L);
+        res.setUserId(1L);
+        res.setStreetAddress("Av. Siempre Viva 123, Santiago");
+        res.setLatitude(-33.45);
+        res.setLongitude(-70.65);
+        res.setComunaNombre("Santiago");
+        res.setRegionNombre("Metropolitana");
+        return res;
+    }
+ 
+ 
+    @Test
+    void createLocation_success_returnsOk() throws Exception {
+        when(locationsService.createUserLocation(any(LocationRequest.class))).thenReturn(buildResponse());
+ 
+        mockMvc.perform(post("/api-v1/location/createLocation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1L))
+                .andExpect(jsonPath("$.comunaNombre").value("Santiago"));
+    }
+ 
+    @Test
+    void createLocation_userNotFound_returns400() throws Exception {
+        when(locationsService.createUserLocation(any(LocationRequest.class)))
+                .thenThrow(new IllegalArgumentException("Usuario no encontrado"));
+ 
+        mockMvc.perform(post("/api-v1/location/createLocation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest())))
+                .andExpect(status().isBadRequest());
+    }
+ 
+    @Test
+    void createLocation_serviceUnavailable_returns503() throws Exception {
+        when(locationsService.createUserLocation(any(LocationRequest.class)))
+                .thenThrow(new ServiceUnavailableException("Service is unavalible"));
+ 
+        mockMvc.perform(post("/api-v1/location/createLocation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest())))
+                .andExpect(status().isServiceUnavailable());
+    }
+ 
+ 
+    @Test
+    void updateLocation_success_returnsOk() throws Exception {
+        when(locationsService.updateLocation(any(LocationRequest.class))).thenReturn(buildResponse());
+ 
+        mockMvc.perform(patch("/api-v1/location/updateLocation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.streetAddress").value("Av. Siempre Viva 123, Santiago"));
+    }
+ 
+    @Test
+    void updateLocation_locationNotFound_returns400() throws Exception {
+        when(locationsService.updateLocation(any(LocationRequest.class)))
+                .thenThrow(new IllegalArgumentException("Locacion not Found"));
+ 
+        mockMvc.perform(patch("/api-v1/location/updateLocation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest())))
+                .andExpect(status().isBadRequest());
+    }
+
+}
