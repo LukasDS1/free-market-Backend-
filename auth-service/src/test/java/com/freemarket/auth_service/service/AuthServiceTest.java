@@ -1,5 +1,6 @@
 package com.freemarket.auth_service.service;
 
+import com.freemarket.auth_service.enums.UserEnums;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
@@ -61,7 +62,7 @@ public class AuthServiceTest {
         user.setLastName("Doe");
         user.setGenre("M");
         user.setRol(rol);
-        user.setStateId(1L);
+        user.setStatus(UserEnums.ACTIVO);
         return user;
     }
  

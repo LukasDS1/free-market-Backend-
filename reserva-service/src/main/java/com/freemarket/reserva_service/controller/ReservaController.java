@@ -2,17 +2,13 @@ package com.freemarket.reserva_service.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.freemarket.reserva_service.request.CancelReserveRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
 import com.freemarket.reserva_service.service.ReservaService;
-
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -30,9 +26,10 @@ public class ReservaController {
       
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteReserva(@RequestBody CancelReserveRequest request  ) {
-            reservaService.deleteReserve(request);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    @PatchMapping("/cancel")
+    public ResponseEntity<?> cancelReserva(@RequestBody CancelReserveRequest request) {
+    reservaService.deleteReserve(request);
+    return ResponseEntity.ok().build();
     }
+
 }

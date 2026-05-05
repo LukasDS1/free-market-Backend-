@@ -73,7 +73,7 @@ public class ServicesTest {
     void createModulo_success_returnsModuloResponse() {
         Modulo saved = buildModulo();
 
-        when(moduloRepository.findByModuloname("VENTAS")).thenReturn(false);
+        when(moduloRepository.existsByModuloname("VENTAS")).thenReturn(false);
         when(moduloRepository.save(any(Modulo.class))).thenReturn(saved);
 
         moduloResponse response = services.createModulo(buildModuloRequest());
@@ -84,7 +84,7 @@ public class ServicesTest {
 
     @Test
     void createModulo_duplicateName_throwsIllegalArgument() {
-        when(moduloRepository.findByModuloname("VENTAS")).thenReturn(true);
+        when(moduloRepository.existsByModuloname("VENTAS")).thenReturn(true);
 
         assertThatThrownBy(() -> services.createModulo(buildModuloRequest()))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -101,8 +101,8 @@ public class ServicesTest {
         List<ResponseDTO> result = services.getPrivilegesByRole(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo("READ");
-        assertThat(result.get(0).getModule()).isEqualTo("VENTAS");
+        assertThat(result.get(0).getPrivilegeName()).isEqualTo("READ");
+        assertThat(result.get(0).getModuloName()).isEqualTo("VENTAS");
     }
 
     @Test

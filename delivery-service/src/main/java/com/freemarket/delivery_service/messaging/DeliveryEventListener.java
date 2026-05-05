@@ -51,11 +51,13 @@ public class DeliveryEventListener {
         .orElse(null);
 
     if (details == null) return;
-
-    deliveryRepository.findByDeliveryDetails_IdReserva(event.getIdReserva())
-        .ifPresent(deliveryRepository::delete);
-
-    deliveryDetailsRepository.delete(details);
+ deliveryRepository.findByDeliveryDetails_IdReserva(event.getIdReserva())
+        .ifPresent(delivery -> {
+            if (!delivery.getStatus().equals(DeliveryStatus.ENTREGADO)) {
+                delivery.setStatus(DeliveryStatus.CANCELADO);
+                deliveryRepository.save(delivery);
+            }
+        });
 }
 
 

@@ -1,14 +1,13 @@
-package com.freemarket.privileges_service.response;
+package com.freemarket.api_gateway.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ResponseDTO {
-
-     private String privilegeName;
+    private String privilegeName;
     private String moduloName;
 }

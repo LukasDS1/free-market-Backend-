@@ -1,7 +1,6 @@
 package com.freemarket.auth_service.controller;
  
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.freemarket.auth_service.client.FeingClient;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
@@ -35,9 +34,6 @@ public class AuthControllerTest {
     
     @MockitoBean
     private AuthService authService;
- 
-    @MockitoBean
-    private FeingClient feingClient;
  
     @MockitoBean
     private RolService rolService;
@@ -139,23 +135,6 @@ public class AuthControllerTest {
                 .andExpect(status().isOk());
     }
  
- 
-    @Test
-    void getState_success_returnsState() throws Exception {
-        when(feingClient.getStateById(1L)).thenReturn("ACTIVE");
- 
-        mockMvc.perform(get("/api-v1/auth/state/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("ACTIVE"));
-    }
- 
-    @Test
-    void getState_serviceUnavailable_returns500() throws Exception {
-        when(feingClient.getStateById(1L)).thenReturn(null);
- 
-        mockMvc.perform(get("/api-v1/auth/state/1"))
-                .andExpect(status().is5xxServerError());
-    }
  
  
     @Test

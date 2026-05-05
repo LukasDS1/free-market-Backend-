@@ -23,10 +23,17 @@ public class JwtService {
 
    public String getToken(UserDetails user) {
     Map<String, Object> extraClaims = new HashMap<>();
+
+    
+    com.freemarket.auth_service.model.User u = 
+        (com.freemarket.auth_service.model.User) user;
+        
     extraClaims.put("roles", user.getAuthorities().stream()
         .map(authority -> authority.getAuthority())
         .collect(java.util.stream.Collectors.toList()));
     
+    extraClaims.put("roleId", u.getRol().getRolId());
+
     return getToken(extraClaims, user);
 }
 public List<String> getRolesFromToken(String token) {
