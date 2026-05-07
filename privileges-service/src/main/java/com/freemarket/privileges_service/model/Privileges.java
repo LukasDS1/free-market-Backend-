@@ -2,6 +2,7 @@ package com.freemarket.privileges_service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,23 +17,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="privilegios")
+@Table(name = "privilegios")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Entidad que representa un privilegio asociado a un módulo del sistema")
 public class Privileges {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "ID del privilegio", example = "1")
     private Long privilegesId;
 
-    @Column 
-    (nullable = false,length = 50,unique = true)
+    @Column(nullable = false, length = 50, unique = true)
+    @Schema(description = "Nombre del privilegio", example = "CREAR_PRODUCTO")
     private String privilegeName;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "moduloId")
     @JsonIgnoreProperties("privilegios")
+    @Schema(description = "Módulo al que pertenece el privilegio")
     private Modulo modulo;
-
-
 }

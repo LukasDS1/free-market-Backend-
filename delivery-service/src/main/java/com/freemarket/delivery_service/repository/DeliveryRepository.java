@@ -10,6 +10,7 @@ import com.freemarket.delivery_service.model.Delivery;
 @Repository
 public interface DeliveryRepository extends JpaRepository<Delivery,Long> {
     Optional<Delivery> findByDeliveryDetails_IdReserva(Long idReserva);
+    
 
 
 }

@@ -17,6 +17,7 @@ import com.freemarket.delivery_service.enums.DeliveryStatus;
 import com.freemarket.delivery_service.model.Delivery;
 import com.freemarket.delivery_service.model.DeliveryDetails;
 import com.freemarket.delivery_service.repository.DeliveryRepository;
+import com.freemarket.delivery_service.response.DeliveryResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class DeliveryServiceTest {
@@ -49,7 +50,7 @@ public class DeliveryServiceTest {
         when(deliveryRepository.findByDeliveryDetails_IdReserva(1L))
                 .thenReturn(Optional.of(buildDelivery()));
 
-        Delivery result = deliveryService.getReserva(1L);
+        DeliveryResponse result = deliveryService.getReserva(1L);
 
         assertThat(result.getIdDelivery()).isEqualTo(1L);
         assertThat(result.getStatus()).isEqualTo(DeliveryStatus.PENDIENTE);
@@ -77,7 +78,7 @@ public class DeliveryServiceTest {
         when(deliveryRepository.findByDeliveryDetails_IdReserva(1L)).thenReturn(Optional.of(delivery));
         when(deliveryRepository.save(any(Delivery.class))).thenReturn(saved);
 
-        Delivery result = deliveryService.updateStatus(1L, DeliveryStatus.EN_CAMINO);
+        DeliveryResponse result = deliveryService.updateStatus(1L, DeliveryStatus.EN_CAMINO);
 
         assertThat(result.getStatus()).isEqualTo(DeliveryStatus.EN_CAMINO);
     }
