@@ -14,6 +14,7 @@ public class ReservaResponse {
     public Long idReserva;
     public Date reserveDate;
     public Integer totalPrice;
+    public String status;
 
 
     

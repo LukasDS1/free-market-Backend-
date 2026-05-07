@@ -8,6 +8,7 @@ import com.freemarket.reserva_service.client.AuthClient;
 import com.freemarket.reserva_service.enums.ReserveStatus;
 import com.freemarket.reserva_service.exception.ServiceUnavailableException;
 import com.freemarket.reserva_service.messaging.ReservaEventPublisher;
+import com.freemarket.reserva_service.messaging.ReservaPendienteProducer;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Reserve;
 import com.freemarket.reserva_service.model.ReserveDetails;
@@ -36,38 +37,39 @@ public class ReservaService {
 
     private final ReservaEventPublisher eventPublisher;
 
+    private final ReservaPendienteProducer pendienteProducer;
+
    
     public ReservaResponse createReserva(ReserveRequest request) {
 
         Boolean exist = authClient.getUserById(request.getIdUser());
 
         if(exist == null){
-            throw new ServiceUnavailableException("Service is not avalible");
+            return crearReservaPendiente(request);
         }
 
         if (!exist) {
             throw new IllegalArgumentException("User not Found");
         }
 
+        return crearReservaCompleta(request,ReserveStatus.RESERVADO);
+
+    }
+
+
+      private ReservaResponse crearReservaPendiente(ReserveRequest request) {
+
         Reserve reserve = new Reserve();
         reserve.setIdUser(request.getIdUser());
         reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
+        reserve.setStatus(ReserveStatus.PENDIENTE); 
         Reserve savedReserve = reserveRepository.save(reserve);
-
         int total = 0;
 
         for (ProductItemRequest item : request.getProducts()) {
 
-            Product product = productRepository.findById(item.getIdProduct())
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
-
-            if (product.getProductStock() < item.getQuantity()) {
-                throw new IllegalArgumentException("No hay suficientes productos");
-            }
-            
-            product.setProductStock(product.getProductStock() - item.getQuantity());
-            productRepository.save(product);
+            Product product = productRepository.findById(item.getIdProduct()).orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
             
             ReserveDetails details = new ReserveDetails();
             details.setQuanty(item.getQuantity());
@@ -82,16 +84,58 @@ public class ReservaService {
         savedReserve.setTotalPrice(total);
         reserveRepository.save(savedReserve);
 
-        eventPublisher.publishReservaCreated(savedReserve.getIdReserva());     
-
+        pendienteProducer.enviarReservPendiente(savedReserve.getIdReserva(), request.getIdUser());
 
         ReservaResponse response = new ReservaResponse();
         response.setIdReserva(savedReserve.getIdReserva());
         response.setReserveDate(savedReserve.getReserveDate());
         response.setTotalPrice(savedReserve.getTotalPrice());
-
+        response.setStatus("PENDIENTE"); 
         return response;
     }
+
+      private ReservaResponse crearReservaCompleta(ReserveRequest request, ReserveStatus status) {
+        Reserve reserve = new Reserve();
+        reserve.setIdUser(request.getIdUser());
+        reserve.setReserveDate(Date.valueOf(LocalDate.now()));
+        reserve.setTotalPrice(0);
+        reserve.setStatus(status);
+        Reserve savedReserve = reserveRepository.save(reserve);
+
+        int total = 0;
+        for (ProductItemRequest item : request.getProducts()) {
+            Product product = productRepository.findById(item.getIdProduct())
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+
+            if (product.getProductStock() < item.getQuantity()) {
+                throw new IllegalArgumentException("No hay suficiente stock");
+            }
+
+            product.setProductStock(product.getProductStock() - item.getQuantity());
+            productRepository.save(product);
+
+            ReserveDetails details = new ReserveDetails();
+            details.setQuanty(item.getQuantity());
+            details.setUnitPrice(product.getProductprice());
+            details.setProduct(product);
+            details.setReserve(savedReserve);
+            reserveDetailsRepository.save(details);
+
+            total += product.getProductprice() * item.getQuantity();
+        }
+
+        savedReserve.setTotalPrice(total);
+        reserveRepository.save(savedReserve);
+        eventPublisher.publishReservaCreated(savedReserve.getIdReserva());
+
+        ReservaResponse response = new ReservaResponse();
+        response.setIdReserva(savedReserve.getIdReserva());
+        response.setReserveDate(savedReserve.getReserveDate());
+        response.setTotalPrice(savedReserve.getTotalPrice());
+        response.setStatus("RESERVADO");
+        return response;
+    }
+
 
 
     //cancelar reserva o devolucion lo que sea jsjs
