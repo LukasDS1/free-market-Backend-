@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,29 +18,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name ="modulo")
+@Table(name = "modulo")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Schema(description = "Entidad que representa un módulo del sistema al que se asocian privilegios")
 public class Modulo {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "ID del módulo", example = "1")
     private Long moduloId;
 
-    @Column 
-    (nullable = false,length = 50,unique = true)
+    @Column(nullable = false, length = 50, unique = true)
+    @Schema(description = "Nombre del módulo", example = "Inventario")
     private String moduloname;
 
-    @OneToMany(mappedBy=  "modulo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL)
     @JsonIgnore
+    @Schema(hidden = true)
     List<Privileges> privileges;
-
-    
-    
-    
-
-
-
-
 }

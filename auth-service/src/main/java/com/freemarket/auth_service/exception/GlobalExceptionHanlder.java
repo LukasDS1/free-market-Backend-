@@ -31,7 +31,6 @@ public class GlobalExceptionHanlder {
                 .body("Service is not avalible yet, try again later");
     }
 
-    // ✅ Faltaba: login con credenciales incorrectas
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
     public ResponseEntity<String> handleAuthentication(
             org.springframework.security.core.AuthenticationException ex) {

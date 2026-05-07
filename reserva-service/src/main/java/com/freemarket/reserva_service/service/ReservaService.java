@@ -2,6 +2,8 @@ package com.freemarket.reserva_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.freemarket.reserva_service.client.AuthClient;
@@ -18,6 +20,8 @@ import com.freemarket.reserva_service.repository.ReserveRepository;
 import com.freemarket.reserva_service.request.CancelReserveRequest;
 import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
+import com.freemarket.reserva_service.response.ProductoReservaResponse;
+import com.freemarket.reserva_service.response.ReservaDetalleResponse;
 import com.freemarket.reserva_service.response.ReservaResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -164,6 +168,40 @@ public class ReservaService {
 
         
     }
+
+    public List<ReservaDetalleResponse> getReservasByUser(Long idUser) {
+
+    Boolean exist = authClient.getUserById(idUser);
+
+    if (exist == null || !exist) {
+        throw new IllegalArgumentException("Usuario no encontrado");
+    }
+
+    List<Reserve> reservas = reserveRepository.findByIdUser(idUser);
+
+    return reservas.stream().map(reserve -> {
+
+        List<ProductoReservaResponse> products = reserve.getReserveDetails()
+            .stream()
+            .map(detail -> new ProductoReservaResponse(
+                detail.getProduct().getIdProduct(),
+                detail.getProduct().getProductname(),
+                detail.getUnitPrice(),
+                detail.getQuanty(),
+                detail.getUnitPrice() * detail.getQuanty()
+            ))
+            .toList();
+
+        return new ReservaDetalleResponse(
+            reserve.getIdReserva(),
+            reserve.getReserveDate(),
+            reserve.getTotalPrice(),
+            reserve.getStatus().name(),
+            products
+        );
+
+    }).toList();
+}
 
  
 

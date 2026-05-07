@@ -3,6 +3,8 @@ package com.freemarket.auth_service.model;
 
 import java.util.List;  
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,24 +23,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 
+@Schema(description = "Entidad que representa los roles del sistema")
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Schema(description = "ID del rol", example = "1")
     private Long rolId;
 
-     @Column
-    (nullable = false,length = 50)
-    private  String rolName;
+    @Column(nullable = false, length = 50)
 
-    @Column
-    (nullable = false,length = 50)
-    private  String Description;
+    @Schema(description = "Nombre del rol", example = "ADMIN")
+    private String rolName;
 
-  
+    @Column(nullable = false, length = 50)
+
+    @Schema(description = "Descripción del rol", example = "Administrador del sistema")
+    private String Description;
+
     @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL)
     @JsonIgnore
     List<User> users;
-
 }
 
