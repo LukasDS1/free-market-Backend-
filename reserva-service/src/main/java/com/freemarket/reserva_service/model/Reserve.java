@@ -45,7 +45,7 @@ public class Reserve {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReserveStatus  status = ReserveStatus.RESERVADO;
+    private ReserveStatus  status = ReserveStatus.PENDIENTE;
     
     @OneToMany(mappedBy = "reserve", cascade = CascadeType.ALL)
     @JsonIgnore
