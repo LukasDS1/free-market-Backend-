@@ -23,6 +23,7 @@ public class ReservaResponse {
     public Integer totalPrice;
 
     @Schema(description = "Estado actual de la reserva", example = "ACTIVA",
-        allowableValues = {"ACTIVA", "CANCELADA", "COMPLETADA"})
+    allowableValues = {"ACTIVA", "CANCELADA", "COMPLETADA"})
     public String status;
+
 }

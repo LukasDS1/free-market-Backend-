@@ -3,12 +3,12 @@ package com.freemarket.reserva_service.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.freemarket.reserva_service.client.AuthClient;
 import com.freemarket.reserva_service.enums.ReserveStatus;
-import com.freemarket.reserva_service.exception.ServiceUnavailableException;
 import com.freemarket.reserva_service.messaging.ReservaEventPublisher;
 import com.freemarket.reserva_service.messaging.ReservaPendienteProducer;
 import com.freemarket.reserva_service.model.Product;
@@ -44,24 +44,48 @@ public class ReservaService {
     private final ReservaPendienteProducer pendienteProducer;
 
    
-    public ReservaResponse createReserva(ReserveRequest request) {
+    public ReservaResponse createReserva(ReserveRequest request,String idempotencyKey) {
+
+        Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
+
+        if (existing.isPresent()) {
+        Reserve r = existing.get();
+        ReservaResponse response = new ReservaResponse();
+        response.setIdReserva(r.getIdReserva());
+        response.setReserveDate(r.getReserveDate());
+        response.setTotalPrice(r.getTotalPrice());
+        response.setStatus(r.getStatus().name());
+        return response;
+    }
 
         Boolean exist = authClient.getUserById(request.getIdUser());
 
         if(exist == null){
-            return crearReservaPendiente(request);
+            return crearReservaPendiente(request,idempotencyKey);
         }
 
         if (!exist) {
             throw new IllegalArgumentException("User not Found");
         }
-
-        return crearReservaCompleta(request,ReserveStatus.RESERVADO);
-
+        return crearReservaCompleta(request,ReserveStatus.RESERVADO,idempotencyKey);
     }
 
 
-      private ReservaResponse crearReservaPendiente(ReserveRequest request) {
+
+      private ReservaResponse crearReservaPendiente(ReserveRequest request,String idempotencyKey) {
+
+      Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
+
+      if (existing.isPresent()) {
+        Reserve r = existing.get();
+        ReservaResponse response = new ReservaResponse();
+        response.setIdReserva(r.getIdReserva());
+        response.setReserveDate(r.getReserveDate());
+        response.setTotalPrice(r.getTotalPrice());
+        response.setStatus(r.getStatus().name());
+        return response;
+    }
+
 
         Reserve reserve = new Reserve();
         reserve.setIdUser(request.getIdUser());
@@ -98,12 +122,25 @@ public class ReservaService {
         return response;
     }
 
-      private ReservaResponse crearReservaCompleta(ReserveRequest request, ReserveStatus status) {
+      private ReservaResponse crearReservaCompleta(ReserveRequest request, ReserveStatus status, String idempotencyKey) {
+
+         Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
+         if (existing.isPresent()) {
+        Reserve r = existing.get();
+        ReservaResponse response = new ReservaResponse();
+        response.setIdReserva(r.getIdReserva());
+        response.setReserveDate(r.getReserveDate());
+        response.setTotalPrice(r.getTotalPrice());
+        response.setStatus(r.getStatus().name());
+        return response;
+    }
+
         Reserve reserve = new Reserve();
         reserve.setIdUser(request.getIdUser());
         reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
         reserve.setStatus(status);
+        reserve.setIdempotencyKey(idempotencyKey);
         Reserve savedReserve = reserveRepository.save(reserve);
 
         int total = 0;

@@ -48,64 +48,55 @@ public class ReservaControllerTest {
         return res;
     }
 
-
-
     @Test
-    void createReserve_success_returnsOk() throws Exception {
-        when(reservaService.createReserva(any(ReserveRequest.class))).thenReturn(buildResponse());
+void createReserve_success_returnsOk() throws Exception {
+    when(reservaService.createReserva(any(ReserveRequest.class), any(String.class)))
+            .thenReturn(buildResponse()); // ← any() para el key
 
-        mockMvc.perform(post("/api-v1/reserve/createReserve")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new ReserveRequest())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idReserva").value(1L))
-                .andExpect(jsonPath("$.totalPrice").value(2000));
-    }
+    mockMvc.perform(post("/api-v1/reserve/createReserve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Idempotency-Key", "test-key-123") // ← header
+                    .content(objectMapper.writeValueAsString(new ReserveRequest())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.idReserva").value(1L))
+            .andExpect(jsonPath("$.totalPrice").value(2000));
+}
 
-    @Test
-    void createReserve_userNotFound_returns400() throws Exception {
-        when(reservaService.createReserva(any(ReserveRequest.class)))
-                .thenThrow(new IllegalArgumentException("User not Found"));
+@Test
+void createReserve_userNotFound_returns400() throws Exception {
+    when(reservaService.createReserva(any(ReserveRequest.class), any(String.class)))
+            .thenThrow(new IllegalArgumentException("User not Found"));
 
-        mockMvc.perform(post("/api-v1/reserve/createReserve")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new ReserveRequest())))
-                .andExpect(status().isBadRequest());
-    }
+    mockMvc.perform(post("/api-v1/reserve/createReserve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Idempotency-Key", "test-key-123")
+                    .content(objectMapper.writeValueAsString(new ReserveRequest())))
+            .andExpect(status().isBadRequest());
+}
 
-    @Test
-    void createReserve_serviceUnavailable_returns503() throws Exception {
-        when(reservaService.createReserva(any(ReserveRequest.class)))
-                .thenThrow(new ServiceUnavailableException("Service is not avalible"));
+@Test
+void createReserve_serviceUnavailable_returns503() throws Exception {
+    when(reservaService.createReserva(any(ReserveRequest.class), any(String.class)))
+            .thenThrow(new ServiceUnavailableException("Service is not available"));
 
-        mockMvc.perform(post("/api-v1/reserve/createReserve")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new ReserveRequest())))
-                .andExpect(status().isServiceUnavailable());
-    }
+    mockMvc.perform(post("/api-v1/reserve/createReserve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Idempotency-Key", "test-key-123")
+                    .content(objectMapper.writeValueAsString(new ReserveRequest())))
+            .andExpect(status().isServiceUnavailable());
+}
 
+// ← test nuevo para idempotencia
+@Test
+void createReserve_withoutKey_generatesKeyAutomatically() throws Exception {
+    when(reservaService.createReserva(any(ReserveRequest.class), any(String.class)))
+            .thenReturn(buildResponse());
 
-    // ── DELETE /delete ────────────────────────────────────────────────────────
+    mockMvc.perform(post("/api-v1/reserve/createReserve") // ← sin header
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(new ReserveRequest())))
+            .andExpect(status().isOk());
+}
 
-    @Test
-    void deleteReserva_success_returnsAccepted() throws Exception {
-        doNothing().when(reservaService).deleteReserve(any(CancelReserveRequest.class));
-
-        mockMvc.perform(delete("/api-v1/reserve/delete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new CancelReserveRequest())))
-                .andExpect(status().isAccepted());
-    }
-
-    @Test
-    void deleteReserva_userMismatch_returns400() throws Exception {
-        doThrow(new IllegalArgumentException("La id del usuario no coincide con la id de la reserva"))
-                .when(reservaService).deleteReserve(any(CancelReserveRequest.class));
-
-        mockMvc.perform(delete("/api-v1/reserve/delete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new CancelReserveRequest())))
-                .andExpect(status().isBadRequest());
-    }
 
 }

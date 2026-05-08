@@ -74,8 +74,9 @@ void getPrivilegesByRole_success_returnsOk() throws Exception {
 
     mockMvc.perform(get("/api-v1/privileges/role/1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].name").value("READ"))
-            .andExpect(jsonPath("$[0].module").value("VENTAS"));
+            .andExpect(jsonPath("$[0].privilegeName").value("READ"))   
+            .andExpect(jsonPath("$[0].moduloName").value("VENTAS"));    
+            
 }
 
     @Test
