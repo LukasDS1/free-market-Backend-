@@ -80,19 +80,32 @@ public class DeliveryEventListenerTest {
 
     // ── handleReservaCancelled ────────────────────────────────────────────────
 
-    @Test
-    void handleReservaCancelled_success_deletesDeliveryAndDetails() {
-        DeliveryDetails details = buildSavedDetails();
-        Delivery delivery = buildDelivery(details);
+   @Test
+void handleReservaCancelled_success_deletesDeliveryAndDetails() {
+    DeliveryDetails details = buildSavedDetails();
+    Delivery delivery = buildDelivery(details);
 
-        when(deliveryDetailsRepository.findByIdReserva(1L)).thenReturn(Optional.of(details));
-        when(deliveryRepository.findByDeliveryDetails_IdReserva(1L)).thenReturn(Optional.of(delivery));
+    when(deliveryDetailsRepository.findByIdReserva(1L)).thenReturn(Optional.of(details));
+    when(deliveryRepository.findByDeliveryDetails_IdReserva(1L)).thenReturn(Optional.of(delivery));
 
-        deliveryEventListener.handleReservaCancelled(new ReservaCancelledEvent(1L));
+    deliveryEventListener.handleReservaCancelled(new ReservaCancelledEvent(1L));
 
-        verify(deliveryRepository).delete(delivery);
-        verify(deliveryDetailsRepository).delete(details);
-    }
+    verify(deliveryRepository).save(delivery);
+    verify(deliveryDetailsRepository, never()).delete(any());
+}
+
+@Test
+void handleReservaCancelled_deliveryNotFound_onlyDeletesDetails() {
+    DeliveryDetails details = buildSavedDetails();
+
+    when(deliveryDetailsRepository.findByIdReserva(1L)).thenReturn(Optional.of(details));
+    when(deliveryRepository.findByDeliveryDetails_IdReserva(1L)).thenReturn(Optional.empty());
+
+    deliveryEventListener.handleReservaCancelled(new ReservaCancelledEvent(1L));
+
+    verify(deliveryRepository, never()).save(any());
+    verify(deliveryDetailsRepository, never()).delete(any());
+}
 
     @Test
     void handleReservaCancelled_detailsNotFound_doesNothing() {
@@ -104,16 +117,5 @@ public class DeliveryEventListenerTest {
         verify(deliveryDetailsRepository, never()).delete(any());
     }
 
-    @Test
-    void handleReservaCancelled_deliveryNotFound_onlyDeletesDetails() {
-        DeliveryDetails details = buildSavedDetails();
-
-        when(deliveryDetailsRepository.findByIdReserva(1L)).thenReturn(Optional.of(details));
-        when(deliveryRepository.findByDeliveryDetails_IdReserva(1L)).thenReturn(Optional.empty());
-
-        deliveryEventListener.handleReservaCancelled(new ReservaCancelledEvent(1L));
-
-        verify(deliveryRepository, never()).delete(any());
-        verify(deliveryDetailsRepository).delete(details);
-    }
+    
 }

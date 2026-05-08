@@ -42,6 +42,8 @@ public class Reserve {
     (nullable = false,length = 255)
     private Integer totalPrice;    
 
+    @Column(unique = true, nullable = false)
+    private String idempotencyKey;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

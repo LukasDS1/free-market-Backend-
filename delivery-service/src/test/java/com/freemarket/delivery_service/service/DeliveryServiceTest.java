@@ -53,7 +53,7 @@ public class DeliveryServiceTest {
         DeliveryResponse result = deliveryService.getReserva(1L);
 
         assertThat(result.getIdDelivery()).isEqualTo(1L);
-        assertThat(result.getStatus()).isEqualTo(DeliveryStatus.PENDIENTE);
+        assertThat(result.getStatus()).isEqualTo("PENDIENTE");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class DeliveryServiceTest {
 
         DeliveryResponse result = deliveryService.updateStatus(1L, DeliveryStatus.EN_CAMINO);
 
-        assertThat(result.getStatus()).isEqualTo(DeliveryStatus.EN_CAMINO);
+        assertThat(result.getStatus()).isEqualTo("EN_CAMINO");
     }
 
     @Test
