@@ -38,8 +38,7 @@ public class AuthController {
 private final AuthService authService;
     private final RolService rolService;
 
-    @PatchMapping("/setState/{id}")
-
+@PatchMapping("/setState/{id}")
 @Operation(
     summary = "Cambiar estado del usuario",
     description = "Activa o desactiva el estado del usuario"
@@ -304,9 +303,6 @@ public ResponseEntity<Boolean> getById(
     return ResponseEntity.ok(
             authService.getByid(id));
 }
-
-
-
 
 @PostMapping("/refresh")
 

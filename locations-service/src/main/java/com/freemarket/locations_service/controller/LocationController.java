@@ -5,15 +5,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
+import com.freemarket.locations_service.response.LocationResponseForId;
 import com.freemarket.locations_service.service.LocationsService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,7 +65,7 @@ public class LocationController {
         return ResponseEntity.ok().body(locationsService.createUserLocation(request));
     }
 
-    @PatchMapping("/updateLocation")
+    @PutMapping("/updateLocation")
     @Operation(
         summary = "Actualizar ubicación",
         description = "Actualiza la ubicación de un usuario geocodificando la nueva dirección ingresada"
@@ -93,4 +97,33 @@ public class LocationController {
         @RequestBody LocationRequest request) {
         return ResponseEntity.ok(locationsService.updateLocation(request));
     }
+
+
+    @GetMapping("/getLocation/{id}")
+    @Operation(
+    summary = "Obtener ubicación por ID de usuario",
+    description = "Retorna la ubicación registrada de un usuario, incluyendo su dirección, comuna y región"
+    )
+    @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Ubicación encontrada exitosamente",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = LocationResponseForId.class))
+    ),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Usuario o ubicación no encontrada",
+        content = @Content(mediaType = "application/json")
+    )
+    })
+    public ResponseEntity<LocationResponseForId> getLocationByUserId(
+    @Parameter(
+        description = "ID del usuario cuya ubicación se desea obtener",
+        required = true,
+        example = "1"
+    )
+    @PathVariable Long id) {
+    return ResponseEntity.ok(locationsService.getLocationByUserId(id));
+}
 }

@@ -55,7 +55,7 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.getReserva(idReserva));
     }
 
-    @PatchMapping("/reserva/{idReserva}/status")
+    @PatchMapping("/reserva/status/{idReserva}")
     @Operation(
         summary = "Actualizar estado del delivery",
         description = "Actualiza el estado de un delivery asociado a una reserva"
