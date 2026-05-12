@@ -25,7 +25,6 @@ public class DeliveryEventListener {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
     public void handleReservaCreated(ReservaCreatedEvent event){
-
         if(deliveryDetailsRepository.existsByIdReserva(event.getIdReserva())){
             return;
         }
@@ -49,7 +48,6 @@ public class DeliveryEventListener {
     public void handleReservaCancelled(ReservaCancelledEvent event) {
     DeliveryDetails details = deliveryDetailsRepository.findByIdReserva(event.getIdReserva())
         .orElse(null);
-
     if (details == null) return;
  deliveryRepository.findByDeliveryDetails_IdReserva(event.getIdReserva())
         .ifPresent(delivery -> {

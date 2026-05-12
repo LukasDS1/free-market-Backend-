@@ -12,6 +12,8 @@ import com.freemarket.locations_service.repository.LocationRepository;
 import com.freemarket.locations_service.repository.RegionRepository;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
+import com.freemarket.locations_service.response.LocationResponseForId;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,6 +25,20 @@ public class LocationsService {
     private final ComunaRepository comunaRepo;
     private final RegionRepository regionRepo;
     private final AuthClient authClientService; 
+
+
+    public LocationResponseForId getLocationByUserId(Long id){
+
+        Location location = locationRepo.findByUserIdWithComunaAndRegion(id).orElseThrow
+        (() -> new IllegalArgumentException("Usuario no encontrado"));
+         
+        LocationResponseForId response = new LocationResponseForId();
+        response.setStreetAddress(location.getStreetAddress());
+        response.setComunaNombre(location.getComuna().getNombreComuna());
+        response.setRegionNombre(location.getComuna().getRegion().getNombreRegion());
+        return response;
+
+    }
 
     public LocationResponse createUserLocation(LocationRequest request) {
         validationAddress(request.getAddress());
@@ -122,7 +138,6 @@ public class LocationsService {
         response.setLongitude(saved.getLongitud());
         response.setComunaNombre(comuna.getNombreComuna());
         response.setRegionNombre(region.getNombreRegion());
-
         return response;
     }
 
