@@ -88,6 +88,10 @@ public AuthResponse refresh(String refreshToken) {
         userRespository.save(user);
         throw new IllegalArgumentException("Refresh token expirado");
     }
+    
+    if (user.getStatus().equals(UserEnums.INACTIVO)) {
+        throw new IllegalArgumentException("Usuario bloqueado");
+    }
 
     return buildAuthResponse(user); 
 }

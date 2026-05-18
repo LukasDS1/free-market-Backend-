@@ -33,6 +33,7 @@ public class JwtService {
         .collect(java.util.stream.Collectors.toList()));
     
     extraClaims.put("roleId", u.getRol().getRolId());
+    extraClaims.put("status", u.getStatus().name());
 
     return getToken(extraClaims, user);
 }
