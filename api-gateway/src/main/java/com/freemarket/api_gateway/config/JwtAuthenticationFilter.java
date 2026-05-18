@@ -39,16 +39,19 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         "/api-v1/auth/logout"
     );
 
-    private static final Map<String, String> ROUTE_PRIVILEGES = Map.of(
-        "POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE",
-        "PATCH:/api-v1/reserve/cancel",          "UPDATE_RESERVE",
-        "GET:/api-v1/reserve",                   "READ_RESERVE",
-        "POST:/api-v1/productos",                "CREATE_PRODUCT",
-        "GET:/api-v1/productos",                 "READ_PRODUCT",
-        "PATCH:/api-v1/productos",               "UPDATE_PRODUCT",
-        "DELETE:/api-v1/productos",              "DELETE_PRODUCT",
-        "PATCH:/api-v1/auth/update",             "UPDATE_USER"
-    );
+    private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
+    Map.entry("POST:/api-v1/reserve/createReserve",  "CREATE_RESERVE"),
+    Map.entry("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE"),
+    Map.entry("GET:/api-v1/reserve",                  "READ_RESERVE"),
+    Map.entry("POST:/api-v1/productos",               "CREATE_PRODUCT"),
+    Map.entry("GET:/api-v1/productos",                "READ_PRODUCT"),
+    Map.entry("PATCH:/api-v1/productos",              "UPDATE_PRODUCT"),
+    Map.entry("DELETE:/api-v1/productos",             "DELETE_PRODUCT"),
+    Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
+    Map.entry("PATCH:/api-v1/auth/setState",          "SET_STATE_USER"),
+    Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),      
+    Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER")  
+);
 
     private final WebClient webClient;
     private final ReactiveCircuitBreaker circuitBreaker;
@@ -86,6 +89,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             String username = claims.getSubject();
             List<String> roles = claims.get("roles", List.class);
             Long roleId = claims.get("roleId", Long.class);
+            String status = claims.get("status", String.class);
+
+            if ("INACTIVO".equals(status)) {
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+            return exchange.getResponse().setComplete();
+            }
 
             String requiredPrivilege = ROUTE_PRIVILEGES.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(method + ":") &&

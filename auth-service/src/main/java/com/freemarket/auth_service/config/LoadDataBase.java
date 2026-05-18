@@ -33,16 +33,10 @@ public class LoadDataBase {
                 Rol Usuario = new Rol(null, "USER", "USER ROL",new ArrayList<>());
                 rolRepository.save(Usuario);
 
-                User ADM = new User(null,"admin@gmail.com","1234","ADMIN","Juan","Perez","MASCULINO",UserEnums.ACTIVO,null,null,admin);
-                
-                String encoded = passwordEncoder.encode(ADM.getPassword());  
-                ADM.setPassword(encoded);
+                User ADM = new User(null,"admin@freemarket.com",passwordEncoder.encode("Admin#2024!"),"admin",
+                "Free","Market", "MASCULINO", UserEnums.ACTIVO,null,null,admin);
                 userRepository.save(ADM);
 
-                User USR = new User(null,"user@gmail.com","1234","USER","Pablo","Pincel","MASCULINO",UserEnums.ACTIVO,null,null,Usuario);
-                String encoded2 = passwordEncoder.encode(USR.getPassword());
-                USR.setPassword(encoded2);
-                userRepository.save(USR);
             }else{
                 System.out.println("Datos ya existen. No se cargaron.");
             }

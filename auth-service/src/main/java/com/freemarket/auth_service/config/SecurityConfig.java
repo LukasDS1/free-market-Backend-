@@ -37,57 +37,38 @@ public JwtAuthenticationFilter jwtAuthenticationFilter(
 SecurityFilterChain securityFilterChain(
         HttpSecurity http,
         JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-
-    return http
-
-            .csrf(csrf -> csrf.disable())
-
-            .authorizeHttpRequests(auth -> auth
-
-                    .requestMatchers(
-                        "/auth-swagger-ui",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                         "/v3/api-docs/**",
-                        "/v3/api-docs.yaml",
-                        "/webjars/**",
-                        "/api-v1/auth/{id}"
-                    ).permitAll()
-
-                    .requestMatchers(
-                            "/api-v1/auth/login",
-                            "/api-v1/auth/register",
-                            "/api-v1/auth/role/**",
-                             "/api-v1/auth/refresh" 
-                    ).permitAll()
-
-                    .requestMatchers(
-                            "/api-v1/auth/update/**",
-                            "/api-v1/auth/logout"
-                    ).authenticated()
-                    .requestMatchers(
-                            "/api-v1/auth/setState/**"
-                    ).hasAuthority("ADMIN")
-
-                    .anyRequest().authenticated()
-            )
-
-            .sessionManagement(sessionManager ->
-                    sessionManager.sessionCreationPolicy(
-                            SessionCreationPolicy.STATELESS
-                    )
-            )
-
-            .authenticationProvider(authProvider)
-
-            .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            )
-
-            .build();
+                return http
+    .csrf(csrf -> csrf.disable())
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers(
+            "/auth-swagger-ui",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+            "/webjars/**",
+            "/api-v1/auth/{id}",
+            "/api-v1/auth/login",
+            "/api-v1/auth/register",
+            "/api-v1/auth/role/**",
+            "/api-v1/auth/refresh"
+        ).permitAll()
+        .requestMatchers(
+            "/api-v1/auth/update/**",
+            "/api-v1/auth/logout",
+            "/api-v1/auth/setState/**",
+            "/api-v1/auth/rol",          
+            "/api-v1/auth/rol/change"    
+        ).authenticated()
+        .anyRequest().authenticated()
+    )
+    .sessionManagement(session ->
+        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    )
+    .authenticationProvider(authProvider)
+    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+    .build();
 }
-
 
 @Bean
   PasswordEncoder passwordEncoder(){

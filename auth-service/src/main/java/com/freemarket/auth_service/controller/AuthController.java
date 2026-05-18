@@ -2,8 +2,12 @@ package com.freemarket.auth_service.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.freemarket.auth_service.model.Rol;
+import com.freemarket.auth_service.request.CreateRolRequest;
 import com.freemarket.auth_service.request.LoginRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
+import com.freemarket.auth_service.request.RolChangeRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.service.AuthService;
@@ -347,8 +351,6 @@ public ResponseEntity<AuthResponse> refresh(
 }
 
 
-
-
 @PostMapping("/logout")
 
 @Operation( summary = "Cerrar sesión",description = "Invalida el refresh token del usuario")
@@ -361,4 +363,28 @@ public ResponseEntity<Void> logout(@RequestBody Map<String, String> body) {
    return ResponseEntity.ok().build();
 }
 
+@PostMapping("/rol")
+@Operation(summary = "Crear rol", description = "Crea un nuevo rol en el sistema")
+@ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Rol creado correctamente"),
+    @ApiResponse(responseCode = "400", description = "Rol ya existe",
+        content = @Content(examples = @ExampleObject(value = "Rol con nombre X ya existe")))
+})
+public ResponseEntity<Rol> createRol(@RequestBody CreateRolRequest request) {
+    return ResponseEntity.ok(rolService.createRol(request));
 }
+
+@PatchMapping("/rol/change")
+@Operation(summary = "Cambiar rol de usuario", description = "Asigna un nuevo rol a un usuario existente")
+@ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Rol cambiado correctamente"),
+    @ApiResponse(responseCode = "404", description = "Usuario o rol no encontrado",
+        content = @Content(examples = @ExampleObject(value = "User not found")))
+})
+public ResponseEntity<Void> changeUserRol(@RequestBody RolChangeRequest request) {
+    rolService.changeUserRol(request);
+    return ResponseEntity.ok().build();
+}
+
+}
+

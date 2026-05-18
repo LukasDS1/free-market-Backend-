@@ -48,6 +48,13 @@ public class LoadDataBase {
                 Privileges DeleteUser  = new Privileges(null, "DELETE_USER", ModuloUser);
                 privilegesRepository.save(DeleteUser);
 
+                Privileges CreateRol     = new Privileges(null, "CREATE_ROL",      ModuloUser);
+                privilegesRepository.save(CreateRol);
+
+                Privileges ChangeRolUser = new Privileges(null, "CHANGE_ROL_USER", ModuloUser);
+                privilegesRepository.save(ChangeRolUser);
+
+
                 /////////////////
 
                 Privileges CreateProduct  = new Privileges(null, "CREATE_PRODUCT", ModuloProducto);
@@ -61,6 +68,9 @@ public class LoadDataBase {
 
                 Privileges DeleteProduct  = new Privileges(null, "DELETE_PRODUCT", ModuloProducto);
                 privilegesRepository.save(DeleteProduct);
+
+                Privileges SetStateUser = new Privileges(null, "SET_STATE_USER", ModuloUser);
+                privilegesRepository.save(SetStateUser);
 
                 /////////////////
                  
@@ -82,8 +92,10 @@ public class LoadDataBase {
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadUser));
-                rolePrivilegesList.add(new rolPrivileges(null, 1L, UpdateUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, DeleteUser));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, SetStateUser));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateRol));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, ChangeRolUser));
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateProduct));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadProduct));
