@@ -9,6 +9,7 @@ import com.freemarket.reserva_service.messaging.event.ReservaPendienteEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -16,17 +17,15 @@ public class ReservaPendienteProducer {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void enviarReservPendiente(Long idReserva,Long idUser){
-
-     ReservaPendienteEvent event = new ReservaPendienteEvent(idReserva, idUser);
+    public void enviarReservaPendiente(Long idReserva, Long idUser) {
+        ReservaPendienteEvent event = new ReservaPendienteEvent(idReserva, idUser);
 
         rabbitTemplate.convertAndSend(
-            RabbitMQConfig.EXCHANGE,
-            RabbitMQConfig.ROUTING_KEY_PENDIENTE,
+            RabbitMQConfig.EXCHANGE,               // exchange principal
+            RabbitMQConfig.ROUTING_KEY_PENDIENTE,  // routing key
             event
         );
-         log.info("Reserva enviada ala cola de pendiente");
+
+        log.info("📨 Reserva {} enviada a cola pendiente para usuario {}", idReserva, idUser);
     }
-
-
 }

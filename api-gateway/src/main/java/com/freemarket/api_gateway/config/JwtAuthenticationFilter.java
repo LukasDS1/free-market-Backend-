@@ -128,8 +128,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                //circuito abierto o timeout
                 throwable -> {
                     log.error("Fallback activado: {}", throwable.getClass().getName() + " - " + throwable.getMessage());
-                    exchange.getResponse().setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
-                    return exchange.getResponse().setComplete();
+                    return chain.filter(mutatedExchange);
                 }
             );
 

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.freemarket.delivery_service.config.RabbitMQConfig;
 import com.freemarket.delivery_service.enums.DeliveryStatus;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class DeliveryEventListener {
 
     private final DeliveryDetailsRepository deliveryDetailsRepository;

@@ -92,6 +92,7 @@ public class ReservaService {
         reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
         reserve.setStatus(ReserveStatus.PENDIENTE); 
+        reserve.setIdempotencyKey(idempotencyKey);
         Reserve savedReserve = reserveRepository.save(reserve);
         int total = 0;
 
@@ -112,7 +113,7 @@ public class ReservaService {
         savedReserve.setTotalPrice(total);
         reserveRepository.save(savedReserve);
 
-        pendienteProducer.enviarReservPendiente(savedReserve.getIdReserva(), request.getIdUser());
+        pendienteProducer.enviarReservaPendiente(savedReserve.getIdReserva(), request.getIdUser());
 
         ReservaResponse response = new ReservaResponse();
         response.setIdReserva(savedReserve.getIdReserva());

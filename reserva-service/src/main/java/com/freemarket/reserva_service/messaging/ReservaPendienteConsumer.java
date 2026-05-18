@@ -1,7 +1,10 @@
 package com.freemarket.reserva_service.messaging;
 
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.freemarket.reserva_service.client.AuthClient;
 import com.freemarket.reserva_service.config.RabbitMQConfig;
@@ -15,52 +18,69 @@ import com.freemarket.reserva_service.repository.ReserveRepository;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class ReservaPendienteConsumer {
-    
+
     private final AuthClient authClient;
     private final ReserveRepository reserveRepository;
     private final ProductRepository productRepository;
     private final ReservaEventPublisher eventPublisher;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
 
+
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PENDIENTE)
-    public void procesarReservaPendiente(ReservaPendienteEvent event){
+    public void procesarReservaPendiente(ReservaPendienteEvent event) {
 
-        log.info("Procesando Reserva Pendiente");
+        log.info(" Procesando reserva pendiente: {}", event.getIdReserva());
 
-        //verificar estado del circuito
+       
         CircuitBreaker cb = circuitBreakerRegistry.circuitBreaker("auth-service");
 
-        if(cb.getState() == CircuitBreaker.State.OPEN){
-        log.warn("Circuito aun abierto");
-        throw new RuntimeException("auth-service no disponible, reintentando después");
+        if (cb.getState() == CircuitBreaker.State.OPEN) {
+            log.warn(" Circuito aún OPEN. Reserva {} vuelve a la cola.", event.getIdReserva());
+            throw new RuntimeException("auth-service no disponible, reintentando después");
         }
 
-        Reserve reserve = reserveRepository.findById(event.getIdReserva()).orElseThrow( () ->  new IllegalArgumentException("Reserva no encontrada"));
+      Reserve reserve = reserveRepository.findById(event.getIdReserva())
+    .orElseThrow(() -> {
+        log.warn("Reserva {} aún no en BD, reintentando...", event.getIdReserva());
+        return new RuntimeException("Reserva no encontrada, reintentando"); 
+    });
 
-        if(!reserve.getStatus().equals(ReserveStatus.PENDIENTE)){
-            return;
+        
+        if (!reserve.getStatus().equals(ReserveStatus.PENDIENTE)) {
+            log.info(" Reserva {} ya no está PENDIENTE (estado: {}). Descartando.",
+                event.getIdReserva(), reserve.getStatus());
+            return; 
         }
 
         try {
-            Boolean existe = authClient.getUserById(event.getIdUser());
+    Boolean existe = authClient.getUserById(event.getIdUser());
 
-            if(existe){
-                activarReserva(reserve);
-            } else{
-                cancelarReservaPorUsuarioInvalido(reserve);
-            }
+    if (existe == null) {
+        log.warn(" auth-service sigue caído. Reserva {} vuelve a la cola.", event.getIdReserva());
+        throw new RuntimeException("auth-service no disponible, reintentando después");
+    }
 
-        } catch (Exception e) {
-           log.warn("reserva cancelada, usuario no existe");
-           throw e;
-        }
+    if (Boolean.TRUE.equals(existe)) {
+        activarReserva(reserve);
+        log.info(" Reserva {} activada correctamente", event.getIdReserva());
+    } else {
+        cancelarReservaPorUsuarioInvalido(reserve);
+        log.warn("Reserva {} cancelada: usuario {} no existe",
+            event.getIdReserva(), event.getIdUser());
+    }
+
+} catch (Exception e) {
+    log.error(" Error al verificar usuario para reserva {}: {}",
+        event.getIdReserva(), e.getMessage());
+    throw e;
+}
     }
 
     private void activarReserva(Reserve reserve) {
@@ -68,6 +88,8 @@ public class ReservaPendienteConsumer {
             Product product = detail.getProduct();
 
             if (product.getProductStock() < detail.getQuanty()) {
+                log.warn(" Sin stock para producto {}. Cancelando reserva {}",
+                    product.getIdProduct(), reserve.getIdReserva());
                 cancelarReservaPorSinStock(reserve);
                 return;
             }
@@ -81,18 +103,15 @@ public class ReservaPendienteConsumer {
         eventPublisher.publishReservaCreated(reserve.getIdReserva());
     }
 
-
-      private void cancelarReservaPorUsuarioInvalido(Reserve reserve) {
+    private void cancelarReservaPorUsuarioInvalido(Reserve reserve) {
         reserve.setStatus(ReserveStatus.CANCELADO);
         reserveRepository.save(reserve);
         eventPublisher.publishReservaCancelled(reserve.getIdReserva());
     }
-
 
     private void cancelarReservaPorSinStock(Reserve reserve) {
         reserve.setStatus(ReserveStatus.CANCELADO);
         reserveRepository.save(reserve);
         eventPublisher.publishReservaCancelled(reserve.getIdReserva());
     }
-
 }
