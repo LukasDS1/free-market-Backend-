@@ -63,7 +63,7 @@ public class ProductoController {
         @PathVariable Long id) {
         return ResponseEntity.ok().body(productService.getProductById(id));
     }
-
+    
     @PatchMapping("/update/{id}")
     @Operation(summary = "Actualizar producto", description = "Actualiza parcialmente los datos de un producto por su ID")
     @ApiResponses({
