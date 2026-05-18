@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.freemarket.config_service.client.AuthClient;
 import com.freemarket.config_service.exception.ServiceUnavailableException;
+import com.freemarket.config_service.messaging.ConfigPendienteProducer;
+import com.freemarket.config_service.messaging.event.ConfigPendienteEvent;
 import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
@@ -19,6 +21,8 @@ public class configService {
     private final ConfigRepository configRepo;
 
     private final AuthClient rest;
+    
+    private final ConfigPendienteProducer pendienteProducer;
 
 
     public ConfigResponse createConfiguration(ConfigRequest request){
@@ -26,8 +30,9 @@ public class configService {
         Boolean exist = rest.getUserById(request.getIdUser());
 
         if(exist == null){
-            throw new ServiceUnavailableException("Service is not avalible");
-        }
+        encolarCreate(request);                                   
+        throw new ServiceUnavailableException("Service is not available");
+    }
 
         if(!exist){
             throw new IllegalArgumentException();
@@ -81,6 +86,7 @@ public class configService {
         Boolean exist = rest.getUserById(request.getIdUser());
 
         if(exist == null){
+            encolarUpdate(request);
             throw new ServiceUnavailableException("Service is not avalible");
         }
 
@@ -160,6 +166,28 @@ public ConfigResponse getConfigurationByIdUser(Long idUser) {
     }
 
 
+private void encolarUpdate(ConfigRequest request) {
+    ConfigPendienteEvent event = toEvent(request, ConfigPendienteEvent.OperationType.UPDATE);
+    pendienteProducer.enviarConfigPendiente(event);
+}
     
+private ConfigPendienteEvent toEvent(ConfigRequest req, ConfigPendienteEvent.OperationType type) {
+    return new ConfigPendienteEvent(
+        req.getIdUser(),
+        req.getCommerceName(),
+        req.getLogoUrl(),
+        req.getFavicomUrl(),
+        req.getPrimaryColor(),
+        req.getSecondaryColor(),
+        req.getPrincipalFont(),
+        type
+    );
+}
+
+private void encolarCreate(ConfigRequest request) {
+    pendienteProducer.enviarConfigPendiente(
+        toEvent(request, ConfigPendienteEvent.OperationType.CREATE)
+    );
+}
 
 }
