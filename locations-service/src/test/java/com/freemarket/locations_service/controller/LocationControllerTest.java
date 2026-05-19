@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,7 +97,7 @@ public class LocationControllerTest {
     void updateLocation_success_returnsOk() throws Exception {
         when(locationsService.updateLocation(any(LocationRequest.class))).thenReturn(buildResponse());
 
-        mockMvc.perform(patch("/api-v1/location/updateLocation")
+        mockMvc.perform(put("/api-v1/location/updateLocation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildRequest())))
                 .andExpect(status().isOk())
@@ -110,7 +111,7 @@ public class LocationControllerTest {
         when(locationsService.updateLocation(any(LocationRequest.class)))
                 .thenThrow(new IllegalArgumentException("Locacion not Found"));
 
-        mockMvc.perform(patch("/api-v1/location/updateLocation")
+        mockMvc.perform(put("/api-v1/location/updateLocation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildRequest())))
                 .andExpect(status().isBadRequest());

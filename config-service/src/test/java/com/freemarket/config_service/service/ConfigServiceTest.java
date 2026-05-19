@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.config_service.client.AuthClient;
 import com.freemarket.config_service.exception.ServiceUnavailableException;
+import com.freemarket.config_service.messaging.ConfigPendienteProducer;
 import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
@@ -33,6 +34,9 @@ public class ConfigServiceTest {
  
     @InjectMocks
     private configService configService;
+
+    @Mock
+    private ConfigPendienteProducer pendienteProducer; 
  
  
     private ConfigRequest buildRequest() {
