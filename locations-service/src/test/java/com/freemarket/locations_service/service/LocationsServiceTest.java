@@ -220,4 +220,40 @@ public class LocationsServiceTest {
                 .isInstanceOf(ServiceUnavailableException.class)
                 .hasMessageContaining("Servicio de mapas no disponible");
     }
+
+    @Test
+void updateLocation_streetEmpty_throwsIllegalArgument() {
+    LocationRequest request = buildRequest();
+    request.setStreet("");
+
+    assertThatThrownBy(() -> locationsService.updateLocation(request))
+            .isInstanceOf(IllegalArgumentException.class);
+}
+
+@Test
+void updateLocation_streetNumberEmpty_throwsIllegalArgument() {
+    LocationRequest request = buildRequest();
+    request.setStreetNumber("");
+
+    assertThatThrownBy(() -> locationsService.updateLocation(request))
+            .isInstanceOf(IllegalArgumentException.class);
+}
+
+@Test
+void updateLocation_comunaEmpty_throwsIllegalArgument() {
+    LocationRequest request = buildRequest();
+    request.setComuna("");
+
+    assertThatThrownBy(() -> locationsService.updateLocation(request))
+            .isInstanceOf(IllegalArgumentException.class);
+}
+
+@Test
+void updateLocation_regionEmpty_throwsIllegalArgument() {
+    LocationRequest request = buildRequest();
+    request.setRegion("");
+
+    assertThatThrownBy(() -> locationsService.updateLocation(request))
+            .isInstanceOf(IllegalArgumentException.class);
+}
 }

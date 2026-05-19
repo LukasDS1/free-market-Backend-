@@ -91,61 +91,45 @@ public class LocationsService {
     response.setRegionNombre(region.getNombreRegion());
     return response;
 }
-
 public LocationResponse updateLocation(LocationRequest request) {
+
+    validationStreet(request.getStreet());
+    validationStreetNumber(request.getStreetNumber());
+    validationComuna(request.getComuna());
+    validationRegion(request.getRegion());
+
     Location location = locationRepo.findByUserId(request.getUserId())
-        .orElseThrow(() -> new IllegalArgumentException("Locacion not Found"));
+            .orElseThrow(() -> new IllegalArgumentException("Locacion not Found"));
 
-    if (request.getStreet() != null && !request.getStreet().isEmpty()) {
-        validationStreet(request.getStreet());
-        location.setStreet(request.getStreet());
-    }
+    MapsDTO map = mapService.geocode(
+            request.getStreet(),
+            request.getStreetNumber(),
+            request.getComuna(),
+            request.getRegion()
+    );
 
-    if (request.getStreetNumber() != null && !request.getStreetNumber().isEmpty()) {
-        validationStreetNumber(request.getStreetNumber());
-        location.setStreetNumber(request.getStreetNumber());
-    }
-
-    // Si cambia calle o número, re-geocodificar
-    if ((request.getStreet() != null && !request.getStreet().isEmpty()) ||
-        (request.getStreetNumber() != null && !request.getStreetNumber().isEmpty())) {
-
-        String streetParaGeocode = request.getStreet() != null ? request.getStreet() : location.getStreet();
-        String numberParaGeocode = request.getStreetNumber() != null ? request.getStreetNumber() : location.getStreetNumber();
-        String comunaParaGeocode = request.getComuna() != null ? request.getComuna() : location.getComuna().getNombreComuna();
-        String regionParaGeocode = request.getRegion() != null ? request.getRegion() : location.getComuna().getRegion().getNombreRegion();
-
-        MapsDTO map = mapService.geocode(streetParaGeocode, numberParaGeocode, comunaParaGeocode, regionParaGeocode);
-        location.setStreetAddress(map.getFormattedAddress());
-        location.setLatitude(map.getLatitude());
-        location.setLongitud(map.getLongitude());
-    }
-
-    Region region = location.getComuna().getRegion();
-    if (request.getRegion() != null && !request.getRegion().isEmpty()) {
-        validationRegion(request.getRegion());
-        region = regionRepo.findByNombreRegion(request.getRegion())
+    Region region = regionRepo.findByNombreRegion(request.getRegion())
             .orElseGet(() -> {
                 Region newRegion = new Region();
                 newRegion.setNombreRegion(request.getRegion());
                 return regionRepo.save(newRegion);
             });
-    }
 
-    Comuna comuna = location.getComuna();
-    if (request.getComuna() != null && !request.getComuna().isEmpty()) {
-        validationComuna(request.getComuna());
-        Region finalRegion = region;
-        comuna = comunaRepo.findByNombreComuna(request.getComuna())
+    Comuna comuna = comunaRepo.findByNombreComuna(request.getComuna())
             .orElseGet(() -> {
                 Comuna newComuna = new Comuna();
                 newComuna.setNombreComuna(request.getComuna());
-                newComuna.setRegion(finalRegion);
+                newComuna.setRegion(region);
                 return comunaRepo.save(newComuna);
             });
-    }
 
+    location.setStreet(request.getStreet());
+    location.setStreetNumber(request.getStreetNumber());
+    location.setStreetAddress(map.getFormattedAddress());
+    location.setLatitude(map.getLatitude());
+    location.setLongitud(map.getLongitude());
     location.setComuna(comuna);
+
     Location saved = locationRepo.save(location);
 
     LocationResponse response = new LocationResponse();

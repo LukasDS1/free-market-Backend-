@@ -79,10 +79,10 @@ private DeliveryResponse buildDeliveryResponse() {
 
         when(deliveryService.updateStatus(1L, DeliveryStatus.EN_CAMINO)).thenReturn(updated);
 
-        mockMvc.perform(patch("/api-v1/delivery/reserva/1/status")
-                        .param("status", "EN_CAMINO"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("EN_CAMINO"));
+        mockMvc.perform(patch("/api-v1/delivery/reserva/status/1") 
+        .param("status", "EN_CAMINO"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("EN_CAMINO"));
     }
 
 
