@@ -17,7 +17,13 @@ public class LocationResponse {
     @Schema(description = "ID del usuario propietario de la ubicación", example = "42")
     public Long userId;
 
-    @Schema(description = "Dirección de la calle", example = "Av. Libertador Bernardo O'Higgins 1234")
+    @Schema(description = "Nombre de la calle", example = "Calle Apolo")
+    public String street; 
+
+    @Schema(description = "Número de la casa", example = "3009")
+    public String streetNumber; 
+
+    @Schema(description = "Dirección completa formateada", example = "3009 Calle Apolo, Colina, Metropolitana")
     public String streetAddress;
 
     @Schema(description = "Latitud de la ubicación", example = "-33.4569")
@@ -26,7 +32,7 @@ public class LocationResponse {
     @Schema(description = "Longitud de la ubicación", example = "-70.6483")
     public double longitude;
 
-    @Schema(description = "Nombre de la comuna", example = "Santiago")
+    @Schema(description = "Nombre de la comuna", example = "Colina")
     public String comunaNombre;
 
     @Schema(description = "Nombre de la región", example = "Región Metropolitana")

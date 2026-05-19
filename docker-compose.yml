@@ -9,7 +9,6 @@ volumes:
 
 services:
 
-
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -19,7 +18,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql  
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - freemarket-network
     healthcheck:
@@ -28,23 +27,20 @@ services:
       timeout: 5s
       retries: 10
 
-
   phpmyadmin:
-   image: phpmyadmin/phpmyadmin
-   container_name: phpmyadmin
-   restart: always
-   ports:
-    - "8090:80"
-   environment:
-    PMA_HOST: mysql
-    MYSQL_ROOT_PASSWORD: root
-   depends_on:
-    mysql:
-      condition: service_healthy
-   networks:
-    - freemarket-network    
-
-  
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8090:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - freemarket-network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -59,7 +55,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-
 
   eureka-server:
     build: ./eureka-server
@@ -80,8 +75,6 @@ services:
       retries: 8
       start_period: 30s
 
-
-
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -91,7 +84,7 @@ services:
       - freemarket-network
     depends_on:
       eureka-server:
-        condition: service_healthy 
+        condition: service_healthy
       mysql:
         condition: service_healthy
     environment:
@@ -106,6 +99,29 @@ services:
       retries: 15
       start_period: 30s
 
+  privileges-service:
+    build: ./privileges-service
+    container_name: privileges-service
+    ports:
+      - "8082:8082"
+    networks:
+      - freemarket-network
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_privileges
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
 
   api-gateway:
     build: ./api-gateway
@@ -116,14 +132,17 @@ services:
       - freemarket-network
     depends_on:
       auth-service:
-        condition: service_healthy  
+        condition: service_healthy
+      privileges-service:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-
 
   reserva-service:
     build: ./reserva-service
     container_name: reserva-service
+    ports:
+      - "8084:8084"
     networks:
       - freemarket-network
     depends_on:
@@ -132,7 +151,7 @@ services:
       mysql:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy 
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_reserve
       - SPRING_DATASOURCE_USERNAME=root
@@ -146,6 +165,8 @@ services:
   locations-service:
     build: ./locations-service
     container_name: locations-service
+    ports:
+      - "8083:8083"
     networks:
       - freemarket-network
     depends_on:
@@ -159,44 +180,11 @@ services:
       - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
-  privileges-service:
-   build: ./privileges-service
-   container_name: privileges-service
-   networks:
-    - freemarket-network
-   depends_on:
-     api-gateway:
-      condition: service_started
-     mysql:
-      condition: service_healthy
-     auth-service:
-      condition: service_healthy
-   environment:
-    - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_privileges
-    - SPRING_DATASOURCE_USERNAME=root
-    - SPRING_DATASOURCE_PASSWORD=root
-    - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-
   config-service:
     build: ./config-service
     container_name: config-service
-    networks:
-      - freemarket-network
-    depends_on:
-      api-gateway:
-        condition: service_started
-      mysql:
-        condition: service_healthy
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_config
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-
-
-  delivery-service:
-    build: ./delivery-service
-    container_name: delivery-service
+    ports:
+      - "8085:8085"
     networks:
       - freemarket-network
     depends_on:
@@ -205,7 +193,31 @@ services:
       mysql:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy  
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_config
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+
+  delivery-service:
+    build: ./delivery-service
+    container_name: delivery-service
+    ports:
+      - "8087:8087"
+    networks:
+      - freemarket-network
+    depends_on:
+      api-gateway:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_delivery
       - SPRING_DATASOURCE_USERNAME=root

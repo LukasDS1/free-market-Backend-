@@ -36,7 +36,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         "/api-v1/auth/login",
         "/api-v1/auth/register",
         "/api-v1/auth/refresh",
-        "/api-v1/auth/logout"
+        "/api-v1/auth/logout",
+        "/api-v1/config/system/country" 
     );
 
     private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
@@ -50,7 +51,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
     Map.entry("PATCH:/api-v1/auth/setState",          "SET_STATE_USER"),
     Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),      
-    Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER")  
+    Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER"),
+    Map.entry("PATCH:/api-v1/config/system/country",   "UPDATE_SYSTEM_CONFIG")
 );
 
     private final WebClient webClient;
