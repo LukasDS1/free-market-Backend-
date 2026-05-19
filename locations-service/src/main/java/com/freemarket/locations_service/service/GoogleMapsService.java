@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.freemarket.locations_service.DTO.MapsDTO;
-import com.freemarket.locations_service.client.ConfigClient;
 import com.freemarket.locations_service.response.SystemConfigResponse;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,18 +17,18 @@ import lombok.extern.slf4j.Slf4j;
 public class GoogleMapsService {
 
     private final RestTemplate restTemplate;
-    private final ConfigClient configClient;
-
-    public GoogleMapsService(
+    private final CountryConfigService countryConfigService;
+    
+      public GoogleMapsService(
             @Qualifier("RestTemplateNormal") RestTemplate restTemplate,
-            ConfigClient configClient) {
+            CountryConfigService countryConfigService) {
         this.restTemplate = restTemplate;
-        this.configClient = configClient;
+        this.countryConfigService = countryConfigService;
     }
 
     public MapsDTO geocode(String street, String streetNumber, String comuna, String region) {
 
-        SystemConfigResponse config = configClient.getSearchCountry();
+        SystemConfigResponse config = countryConfigService.getCountryConfig();
         String countryCode = config.getConfigValue().toLowerCase().trim();
         String countryName = config.getCountryName(); 
 
