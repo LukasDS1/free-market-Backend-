@@ -2,7 +2,7 @@ name: CI/CD - Backend Config-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Config]
     paths:
       - 'config-service/**'
 

@@ -2,7 +2,7 @@ name: CI/CD - Backend Eureka-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Eureka]
     paths:
       - 'eureka-server/**'
 

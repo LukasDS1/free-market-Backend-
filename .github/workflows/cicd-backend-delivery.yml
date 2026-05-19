@@ -2,7 +2,7 @@ name: CI/CD - Backend Delivery-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Delivery]
     paths:
       - 'delivery-service/**'
 
