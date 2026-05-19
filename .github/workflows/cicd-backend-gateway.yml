@@ -2,7 +2,7 @@ name: CI/CD - Backend Api-Gateway
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Gateway]
     paths:
       - 'api-gateway/**'
 

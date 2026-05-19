@@ -2,7 +2,7 @@ name: CI/CD - Backend Auth-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Auth]
     paths:
       - 'auth-service/**'
 

@@ -2,7 +2,7 @@ name: CI/CD - Backend Locations-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Location]
     paths:
       - 'locations-service/**'
 

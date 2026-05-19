@@ -2,7 +2,7 @@ name: CI/CD - Backend Reserva-Service
 
 on:
   push:
-    branches: [deploy]
+    branches: [deploy/Reserva]
     paths:
       - 'reserva-service/**'
 
