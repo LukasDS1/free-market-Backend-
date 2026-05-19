@@ -34,6 +34,11 @@ public class LoadDataBase {
                 Modulo ModuloReserve = new Modulo(null, "RESERVE_MODULO",new ArrayList<>());
                 moduloRepository.save(ModuloReserve);
 
+                Modulo ModuloConfig = new Modulo(null, "CONFIG_MODULO", new ArrayList<>());
+                moduloRepository.save(ModuloConfig);
+
+
+
                 /////////////////
 
                 Privileges CreateUser  = new Privileges(null, "CREATE_USER", ModuloUser);
@@ -86,6 +91,10 @@ public class LoadDataBase {
                 Privileges DeleteReserve  = new Privileges(null, "DELETE_RESERVE", ModuloReserve);
                 privilegesRepository.save(DeleteReserve);
 
+                Privileges UpdateSystemConfig = new Privileges(null, "UPDATE_SYSTEM_CONFIG", ModuloConfig);
+                privilegesRepository.save(UpdateSystemConfig);
+
+
                 ///////
                 
                 ArrayList<rolPrivileges> rolePrivilegesList = new ArrayList<>();
@@ -110,6 +119,8 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadProduct));
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, CreateReserve));
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadReserve));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, UpdateSystemConfig));
+
 
                 rolPrivilegesRepository.saveAll(rolePrivilegesList);
 

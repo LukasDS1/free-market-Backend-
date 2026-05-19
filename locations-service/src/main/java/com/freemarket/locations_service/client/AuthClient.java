@@ -11,3 +11,5 @@ public interface AuthClient {
     Boolean getUserById(@PathVariable("id") Long id);
 
 }
+
+

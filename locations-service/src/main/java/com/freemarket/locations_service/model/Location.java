@@ -29,9 +29,15 @@ public class Location {
     (nullable=false)
     private Long userId;
 
+    @Column(nullable = false)
+    private String street;
+    
     @Column
-    (nullable=false)
+    (nullable=false) 
     private String streetAddress;
+
+    @Column(nullable = false)
+    private String streetNumber;
 
     @Column
     (nullable=false)
