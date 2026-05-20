@@ -100,7 +100,7 @@ public class ReservaPendienteConsumer {
 
         reserve.setStatus(ReserveStatus.RESERVADO);
         reserveRepository.save(reserve);
-        eventPublisher.publishReservaCreated(reserve.getIdReserva());
+        eventPublisher.publishReservaCreated(reserve.getIdReserva(),reserve.getIdUser());
     }
 
     private void cancelarReservaPorUsuarioInvalido(Reserve reserve) {

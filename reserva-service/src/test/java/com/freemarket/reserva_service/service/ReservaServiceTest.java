@@ -120,7 +120,7 @@ void createReserva_success_returnsReservaResponse() {
     ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123"); 
 
     assertThat(response.getIdReserva()).isEqualTo(1L);
-    verify(eventPublisher).publishReservaCreated(1L);
+    verify(eventPublisher).publishReservaCreated(1L,1L);
 }
 
 @Test

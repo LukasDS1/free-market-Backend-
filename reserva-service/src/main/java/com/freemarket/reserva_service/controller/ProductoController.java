@@ -34,6 +34,19 @@ public class ProductoController {
 
     private final ProductService productService;
 
+
+    @GetMapping("/get")
+    @Operation(summary = "Obtener todos los productos", description = "Retorna todos los productos existentes")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto encontrados",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Productos no encontrado",
+            content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<?> getProductALlProducts() {
+        return ResponseEntity.ok().body(productService.findAllProducts());
+    }
+
     @PostMapping("/create")
     @Operation(summary = "Crear producto", description = "Registra un nuevo producto en el sistema")
     @ApiResponses({

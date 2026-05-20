@@ -52,8 +52,8 @@ public class ReservaController {
             description = "Datos para crear la reserva incluyendo usuario y lista de productos",
             required = true,
             content = @Content(schema = @Schema(implementation = ReserveRequest.class)))
-        @RequestBody ReserveRequest request ,@RequestHeader(value = "Idempotency-Key", defaultValue = "") String idempotencyKey) {
-
+        @RequestBody ReserveRequest request ,@RequestHeader(value = "Idempotency-Key", defaultValue = "") String idempotencyKey,@RequestHeader("X-User-Id") Long userId) {
+            request.setIdUser(userId);
         if (idempotencyKey.isBlank()) {
         idempotencyKey = UUID.randomUUID().toString();
     }
@@ -74,7 +74,8 @@ public class ReservaController {
             description = "Datos para cancelar la reserva",
             required = true,
             content = @Content(schema = @Schema(implementation = CancelReserveRequest.class)))
-        @RequestBody CancelReserveRequest request) {
+        @RequestBody CancelReserveRequest request,@RequestHeader("X-User-Id") Long userId) {
+        request.setIdUser(userId);
         reservaService.deleteReserve(request);
         return ResponseEntity.ok().build();
     }

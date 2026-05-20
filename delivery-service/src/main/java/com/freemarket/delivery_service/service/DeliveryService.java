@@ -1,5 +1,8 @@
 package com.freemarket.delivery_service.service;
 
+import com.freemarket.delivery_service.messaging.DeliveryEventPublisher;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.freemarket.delivery_service.enums.DeliveryStatus;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DeliveryService {
 
+    private final DeliveryEventPublisher deliveryEventPublisher;
     private final DeliveryRepository deliveryRepository;
 
     // Retorna la entidad para uso interno
@@ -31,7 +35,13 @@ public class DeliveryService {
         validateTransition(delivery.getStatus(), newStatus);
 
         delivery.setStatus(newStatus);
-        return toResponse(deliveryRepository.save(delivery));
+        Delivery saved = deliveryRepository.save(delivery);
+        
+        if(newStatus.equals(DeliveryStatus.ENTREGADO)){
+            deliveryEventPublisher.publishDeliveryCompletado(saved.getDeliveryDetails().getIdReserva());
+        }
+
+        return toResponse(saved);
     }
 
     public void cancelDelivery(Long idReserva) {
@@ -58,13 +68,28 @@ public class DeliveryService {
         }
     }
 
+    public List<DeliveryResponse> getDeliveriesByUsuario(Long idUsuario) {
+    return deliveryRepository.findByDeliveryDetails_IdUsuario(idUsuario)
+        .stream()
+        .map(this::toResponse)
+        .toList();
+}
+
     private DeliveryResponse toResponse(Delivery delivery) {
         return new DeliveryResponse(
             delivery.getIdDelivery(),
             delivery.getStatus().name(),
             delivery.getDeliveryDetails().getIdReserva(),
+            delivery.getDeliveryDetails().getIdUsuario(),
             delivery.getDeliveryDetails().getDeliveryBeginDate(),
             delivery.getDeliveryDetails().getDeliveryEndDate()
         );
     }
+
+    public List<DeliveryResponse> getDeliveriesByStatus(DeliveryStatus status) {
+    return deliveryRepository.findByStatus(status)
+        .stream()
+        .map(this::toResponse)
+        .toList();
+}
 }

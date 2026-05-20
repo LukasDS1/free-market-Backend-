@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReservaCreatedEvent implements Serializable{
     private Long idReserva;
+    private Long idUser;
+    
 
 }

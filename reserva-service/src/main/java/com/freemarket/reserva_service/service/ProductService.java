@@ -1,5 +1,8 @@
 package com.freemarket.reserva_service.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Provider;
@@ -18,8 +21,24 @@ public class ProductService {
     private final ProviderRepository providerRepository;
 
 
+    public List<ProductoResponse> findAllProducts(){
+        
+        List<Product> productos = productRepository.findAll();
+        List<ProductoResponse> productoResponses = new ArrayList<>();
 
-
+        for (Product p : productos){
+        ProductoResponse response = new ProductoResponse();
+        response.setId(p.getIdProduct());
+        response.setName(p.getProductname());
+        response.setPrice(p.getProductprice());
+        response.setProovedorNombre(p.getProvider().getProvidername());
+        response.setStock(p.getProductStock());
+        response.setUrl(p.getUrl());
+        productoResponses.add(response);
+        }
+        
+        return productoResponses ;
+    }
 
     //CREAR PRODUCTO
     public ProductoResponse createProduct(ProductoRequest request){
@@ -48,6 +67,7 @@ public class ProductService {
         response.setName(saved.getProductname());
         response.setPrice(saved.getProductprice());
         response.setStock(saved.getProductStock());
+        response.setUrl(saved.getUrl());
         response.setProovedorNombre(saved.getProvider().getProvidername());
         return response;
 

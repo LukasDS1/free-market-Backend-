@@ -26,6 +26,6 @@ public class ReservaPendienteProducer {
             event
         );
 
-        log.info("📨 Reserva {} enviada a cola pendiente para usuario {}", idReserva, idUser);
+        log.info(" Reserva {} enviada a cola pendiente para usuario {}", idReserva, idUser);
     }
 }

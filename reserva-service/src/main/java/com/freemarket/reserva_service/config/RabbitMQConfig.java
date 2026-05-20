@@ -20,6 +20,29 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_DLQ            = "reserva.dlq.exchange";
     public static final String ROUTING_KEY_DLQ         = "reserva.pendiente.dead";
 
+
+    public static final String EXCHANGE_DELIVERY      = "delivery.exchange";
+    public static final String QUEUE_COMPLETADO       = "delivery.completado.queue";
+    public static final String ROUTING_KEY_COMPLETADO = "delivery.completado";
+    
+    @Bean
+    public TopicExchange deliveryExchange() {
+    return new TopicExchange(EXCHANGE_DELIVERY);
+    }
+
+    @Bean
+    public Queue deliveryCompletadoQueue() {
+    return QueueBuilder.durable(QUEUE_COMPLETADO).build();
+    }
+
+    @Bean
+    public Binding bindingDeliveryCompletado() {
+    return BindingBuilder
+        .bind(deliveryCompletadoQueue())
+        .to(deliveryExchange())
+        .with(ROUTING_KEY_COMPLETADO);
+    }
+    
     @Bean
     public TopicExchange reservaExchange() {
         return new TopicExchange(EXCHANGE);

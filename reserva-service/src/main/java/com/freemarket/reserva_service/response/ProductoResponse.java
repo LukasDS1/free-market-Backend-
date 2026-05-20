@@ -20,6 +20,9 @@ public class ProductoResponse {
     @Schema(description = "Nombre del producto", example = "Auriculares Bluetooth")
     public String name;
 
+    @Schema(description = "Imagen del producto", example = "imagen.png")
+    public String url;
+
     @Schema(description = "Precio del producto en pesos", example = "15990")
     public Integer price;
 

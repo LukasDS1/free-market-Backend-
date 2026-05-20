@@ -1,5 +1,7 @@
 package com.freemarket.delivery_service.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -117,4 +119,54 @@ public class DeliveryController {
         deliveryService.cancelDelivery(idReserva);
         return ResponseEntity.ok().build();
     }
+
+
+    @GetMapping("/usuario/{idUsuario}")
+    @Operation(
+        summary = "Obtener deliveries por usuario",
+        description = "Retorna todos los deliveries asociados a un usuario"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Deliveries encontrados exitosamente",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = DeliveryResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontraron deliveries para ese usuario",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    public ResponseEntity<List<DeliveryResponse>> getDeliveriesByUsuario(
+        @Parameter(description = "ID del usuario a consultar", example = "42", required = true)
+        @PathVariable Long idUsuario) {
+        return ResponseEntity.ok(deliveryService.getDeliveriesByUsuario(idUsuario));
+    }
+
+
+    @Operation(
+        summary = "Obtener deliveries por estado",
+        description = "Retorna todos los deliveries asociados a un estado"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Deliveries encontrados exitosamente",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = DeliveryResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontraron deliveries con ese estado",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    @GetMapping("/status/{status}")
+public ResponseEntity<List<DeliveryResponse>> getDeliveriesByStatus( @Parameter(description = "Estatus para consultar", example = "PENDIENTE", required = true)
+@PathVariable DeliveryStatus status) {
+    return ResponseEntity.ok(deliveryService.getDeliveriesByStatus(status));
+}
+
 }

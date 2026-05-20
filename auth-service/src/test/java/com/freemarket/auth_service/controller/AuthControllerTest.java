@@ -112,29 +112,30 @@ public class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
     }
   
-    @Test
-    void updateUser_success_returnsOk() throws Exception {
-        UpdateRequest request = new UpdateRequest();
-        request.setEmail("updated@test.com");
- 
-        doNothing().when(authService).UpdateUser(eq(1L), any(UpdateRequest.class));
- 
-        mockMvc.perform(patch("/api-v1/auth/update/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
-    }
- 
-    @Test
-    void updateUser_invalidData_returns500() throws Exception {
-        doNothing().when(authService).UpdateUser(eq(1L), any(UpdateRequest.class));
- 
-        mockMvc.perform(patch("/api-v1/auth/update/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateRequest())))
-                .andExpect(status().isOk());
-    }
- 
+@Test
+void updateUser_success_returnsOk() throws Exception {
+    UpdateRequest request = new UpdateRequest();
+    request.setEmail("updated@test.com");
+    
+    doNothing().when(authService).UpdateUser(any(UpdateRequest.class), eq(1L));
+    
+    mockMvc.perform(patch("/api-v1/auth/update")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("X-User-Id", "1")         
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+}
+
+@Test
+void updateUser_invalidData_returns500() throws Exception {
+    doNothing().when(authService).UpdateUser(any(UpdateRequest.class), eq(1L));
+    
+    mockMvc.perform(patch("/api-v1/auth/update")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("X-User-Id", "1")          
+            .content(objectMapper.writeValueAsString(new UpdateRequest())))
+        .andExpect(status().isOk());
+}
  
  
     @Test

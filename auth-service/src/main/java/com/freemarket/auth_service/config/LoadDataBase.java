@@ -7,13 +7,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.freemarket.auth_service.enums.UserEnums;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
 import com.freemarket.auth_service.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -32,6 +30,9 @@ public class LoadDataBase {
 
                 Rol Usuario = new Rol(null, "USER", "USER ROL",new ArrayList<>());
                 rolRepository.save(Usuario);
+
+                Rol repartidor = new Rol(null, "REPARTIDOR", "REPARTIDOR ROL",new ArrayList<>());
+                rolRepository.save(repartidor);
 
                 User ADM = new User(null,"admin@freemarket.com",passwordEncoder.encode("Admin#2024!"),"admin",
                 "Free","Market", "MASCULINO", UserEnums.ACTIVO,null,null,admin);

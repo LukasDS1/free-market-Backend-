@@ -1,11 +1,11 @@
-package com.freemarket.reserva_service.enums;
+    package com.freemarket.reserva_service.enums;
 
-public enum ReserveStatus {
+    public enum ReserveStatus {
 
-    RESERVADO,
-    PENDIENTE,
-    COMPLETO,
-    CANCELADO
+        RESERVADO,
+        PENDIENTE,
+        COMPLETO,
+        CANCELADO
 
 
-}
+    }

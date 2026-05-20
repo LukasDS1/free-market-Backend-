@@ -41,11 +41,7 @@ public class LocationsService {
     validationStreetNumber(request.getStreetNumber());
     validationComuna(request.getComuna());
     validationRegion(request.getRegion());
-
-    Boolean userExists = authClientService.getUserById(request.getUserId());
-    if (userExists == null) throw new ServiceUnavailableException("Service is unavalible");
-    if (!userExists) throw new IllegalArgumentException("Usuario no encontrado");
-
+    
     MapsDTO map = mapService.geocode(
         request.getStreet(),
         request.getStreetNumber(),

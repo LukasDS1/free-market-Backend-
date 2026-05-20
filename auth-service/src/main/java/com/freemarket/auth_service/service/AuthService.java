@@ -182,9 +182,9 @@ private AuthResponse buildAuthResponse(User user) {
 
 // Acualizacion de usuario
 
-    public void UpdateUser(Long id,UpdateRequest user){
+    public void UpdateUser(UpdateRequest user,Long idUser){
     
-    User user2 = userRespository.findById(id).orElseThrow();
+    User user2 = userRespository.findById(idUser).orElseThrow();
         
     if(user.getEmail() != null){
     emailEmpty(user.getEmail());
