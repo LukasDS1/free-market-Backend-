@@ -168,7 +168,7 @@ public class ReservaService {
 
         savedReserve.setTotalPrice(total);
         reserveRepository.save(savedReserve);
-        eventPublisher.publishReservaCreated(savedReserve.getIdReserva());
+        eventPublisher.publishReservaCreated(savedReserve.getIdReserva(),savedReserve.getIdUser());
 
         ReservaResponse response = new ReservaResponse();
         response.setIdReserva(savedReserve.getIdReserva());
@@ -208,12 +208,6 @@ public class ReservaService {
     }
 
     public List<ReservaDetalleResponse> getReservasByUser(Long idUser) {
-
-    Boolean exist = authClient.getUserById(idUser);
-
-    if (exist == null || !exist) {
-        throw new IllegalArgumentException("Usuario no encontrado");
-    }
 
     List<Reserve> reservas = reserveRepository.findByIdUser(idUser);
 

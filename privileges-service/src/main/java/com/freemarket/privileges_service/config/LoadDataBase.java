@@ -37,9 +37,20 @@ public class LoadDataBase {
                 Modulo ModuloConfig = new Modulo(null, "CONFIG_MODULO", new ArrayList<>());
                 moduloRepository.save(ModuloConfig);
 
+                Modulo ModuloDelivery = new Modulo(null,"DELIVERY_MODULO",new ArrayList<>());
+                moduloRepository.save(ModuloDelivery);
 
+                Modulo ModuloLocation = new Modulo(null, "LOCATION_MODULO", new ArrayList<>());
+                moduloRepository.save(ModuloLocation);
 
                 /////////////////
+                
+                Privileges ReadDelivery = new Privileges(null, "READ_DELIVERY", ModuloDelivery);
+                privilegesRepository.save(ReadDelivery);
+
+                Privileges ReadLocation = new Privileges(null, "READ_LOCATION", ModuloLocation); // necesitas crear ModuloLocation arriba
+                privilegesRepository.save(ReadLocation);
+
 
                 Privileges CreateUser  = new Privileges(null, "CREATE_USER", ModuloUser);
                 privilegesRepository.save(CreateUser);
@@ -58,6 +69,11 @@ public class LoadDataBase {
 
                 Privileges ChangeRolUser = new Privileges(null, "CHANGE_ROL_USER", ModuloUser);
                 privilegesRepository.save(ChangeRolUser);
+
+                Privileges CreateLocation = new Privileges(null, "CREATE_LOCATION", ModuloLocation);
+                Privileges UpdateLocation = new Privileges(null, "UPDATE_LOCATION", ModuloLocation);
+                privilegesRepository.save(CreateLocation);
+                privilegesRepository.save(UpdateLocation);
 
 
                 /////////////////
@@ -92,12 +108,14 @@ public class LoadDataBase {
                 privilegesRepository.save(DeleteReserve);
 
                 Privileges UpdateSystemConfig = new Privileges(null, "UPDATE_SYSTEM_CONFIG", ModuloConfig);
-                privilegesRepository.save(UpdateSystemConfig);
+                privilegesRepository.save(UpdateSystemConfig);                
 
+                Privileges UpdateDelivery  = new Privileges(null,"UPDATE_DELIVERY_STATE",ModuloDelivery);
+                privilegesRepository.save(UpdateDelivery);                
 
-                ///////
-                
                 ArrayList<rolPrivileges> rolePrivilegesList = new ArrayList<>();
+
+                
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadUser));
@@ -105,6 +123,10 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, SetStateUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateRol));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ChangeRolUser));
+                rolePrivilegesList.add(new rolPrivileges(null,1L,UpdateUser));
+                rolePrivilegesList.add(new rolPrivileges(null,2L,UpdateUser));
+                rolePrivilegesList.add(new rolPrivileges(null,3L,UpdateUser));
+
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateProduct));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadProduct));
@@ -120,6 +142,22 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, CreateReserve));
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadReserve));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, UpdateSystemConfig));
+                rolePrivilegesList.add(new rolPrivileges(null, 3L, UpdateDelivery));
+
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadDelivery));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadDelivery));
+                rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadDelivery));
+                rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadProduct));
+
+
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadLocation));
+
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, UpdateLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, CreateLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, UpdateLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, UpdateReserve));
 
 
                 rolPrivilegesRepository.saveAll(rolePrivilegesList);

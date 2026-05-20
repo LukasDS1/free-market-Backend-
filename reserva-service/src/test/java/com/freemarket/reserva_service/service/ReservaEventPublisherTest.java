@@ -28,7 +28,7 @@ public class ReservaEventPublisherTest {
 
     @Test
     void publishReservaCreated_sendsCorrectEventToExchange() {
-        eventPublisher.publishReservaCreated(1L);
+        eventPublisher.publishReservaCreated(1L,1L);
 
         verify(rabbitTemplate).convertAndSend(
                 eq(RabbitMQConfig.EXCHANGE),

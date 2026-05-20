@@ -23,6 +23,9 @@ public class DeliveryResponse {
     @Schema(description = "ID de la reserva asociada al delivery", example = "10")
     private Long idReserva;
 
+    @Schema(description = "ID del usuario asociada al delivery", example = "1")
+    private Long idUsuario; 
+
     @Schema(description = "Fecha de inicio del delivery", example = "2026-05-07")
     private LocalDate deliveryBeginDate;
 

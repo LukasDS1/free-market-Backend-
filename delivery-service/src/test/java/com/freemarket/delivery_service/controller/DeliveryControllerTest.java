@@ -64,6 +64,7 @@ private DeliveryResponse buildDeliveryResponse() {
         1L,
         "PENDIENTE",
         10L,
+        1L,
         LocalDate.of(2026, 5, 7),
         LocalDate.of(2026, 5, 10)
     );

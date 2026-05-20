@@ -36,10 +36,13 @@ public class DeliveryDetails {
     (nullable = false)
     private LocalDate deliveryEndDate ;
 
-    
     @Column 
     (nullable = false)
     private Long idReserva;
+
+    @Column 
+    (nullable = false)
+    private Long idUsuario;
 
    @OneToOne(mappedBy = "deliveryDetails", fetch = FetchType.LAZY)
     private Delivery delivery;

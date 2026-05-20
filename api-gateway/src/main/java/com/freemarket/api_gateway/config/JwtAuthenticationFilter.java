@@ -37,7 +37,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         "/api-v1/auth/register",
         "/api-v1/auth/refresh",
         "/api-v1/auth/logout",
-        "/api-v1/config/system/country" 
+        "/api-v1/config/system/country" ,
+        "/api-v1/productos/get" ,
+        "/api-v1/reserve/user/{idUser}"
     );
 
     private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
@@ -45,15 +47,18 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     Map.entry("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE"),
     Map.entry("GET:/api-v1/reserve",                  "READ_RESERVE"),
     Map.entry("POST:/api-v1/productos",               "CREATE_PRODUCT"),
-    Map.entry("GET:/api-v1/productos",                "READ_PRODUCT"),
     Map.entry("PATCH:/api-v1/productos",              "UPDATE_PRODUCT"),
     Map.entry("DELETE:/api-v1/productos",             "DELETE_PRODUCT"),
     Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
     Map.entry("PATCH:/api-v1/auth/setState",          "SET_STATE_USER"),
     Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),      
     Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER"),
-    Map.entry("PATCH:/api-v1/config/system/country",   "UPDATE_SYSTEM_CONFIG")
-);
+    Map.entry("PATCH:/api-v1/config/system/country",   "UPDATE_SYSTEM_CONFIG"),
+    Map.entry("PATCH:/api-v1/delivery/reserva",         "UPDATE_DELIVERY_STATE"),
+    Map.entry("GET:/api-v1/delivery",  "READ_DELIVERY"),
+    Map.entry("GET:/api-v1/location",  "READ_LOCATION"),
+    Map.entry("POST:/api-v1/location",  "CREATE_LOCATION"),
+    Map.entry("PATCH:/api-v1/location", "UPDATE_LOCATION"));
 
     private final WebClient webClient;
     private final ReactiveCircuitBreaker circuitBreaker;
@@ -92,6 +97,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             List<String> roles = claims.get("roles", List.class);
             Long roleId = claims.get("roleId", Long.class);
             String status = claims.get("status", String.class);
+            Long userId = claims.get("userId",Long.class);
 
             if ("INACTIVO".equals(status)) {
             exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -109,7 +115,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .request(r -> r
                     .header("X-Username", username)
                     .header("X-Roles", String.join(",", roles))
-                    .header("X-Role-Id", String.valueOf(roleId)))
+                    .header("X-Role-Id", String.valueOf(roleId))
+                .header("X-User-Id", String.valueOf(userId)))
                 .build();
 
             if (requiredPrivilege == null) {

@@ -15,11 +15,19 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY = "reserva.created";
     public static final String QUEUE_CANCELLED  = "delivery.cancelled.queue";
     public static final String ROUTING_KEY_CANCELLED = "reserva.cancelled";
+    public static final String EXCHANGE_DELIVERY      = "delivery.exchange";
+    public static final String ROUTING_KEY_COMPLETADO = "delivery.completado";
+    
 
     @Bean public Queue deliveryQueue() { return QueueBuilder.durable(QUEUE).build(); }
 
     @Bean public TopicExchange reservaExchange() { return new TopicExchange(EXCHANGE); }
 
+    @Bean
+    public TopicExchange deliveryExchange() {
+    return new TopicExchange(EXCHANGE_DELIVERY);
+    }
+    
     @Bean
     public Binding binding(Queue deliveryQueue, TopicExchange reservaExchange) {
         return BindingBuilder.bind(deliveryQueue).to(reservaExchange).with(ROUTING_KEY);

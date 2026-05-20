@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.freemarket.auth_service.service.RolService;
 
@@ -185,7 +186,7 @@ public ResponseEntity<AuthResponse> login(
 
 
 
-@PatchMapping("/update/{id}")
+@PatchMapping("/update")
 
 @Operation(
     summary = "Actualizar usuario",
@@ -230,10 +231,10 @@ public ResponseEntity<AuthResponse> login(
 })
 
 public ResponseEntity<Void> updateUser(
-        @PathVariable Long id,
-        @RequestBody UpdateRequest user) {
+        @RequestBody UpdateRequest user,
+        @RequestHeader ("X-User-Id") Long idUser) {
 
-    authService.UpdateUser(id, user);
+    authService.UpdateUser(user,idUser);
 
     return ResponseEntity.ok().build();
 }

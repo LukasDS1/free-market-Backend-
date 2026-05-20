@@ -12,5 +12,6 @@ public interface DeliveryDetailsRepository  extends JpaRepository<DeliveryDetail
 
     Optional<DeliveryDetails> findByIdReserva(Long idReserva);
     boolean existsByIdReserva(Long idReserva);
+    
 
 }

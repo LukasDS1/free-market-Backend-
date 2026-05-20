@@ -61,7 +61,7 @@ public class DeliveryEventListenerTest {
         when(deliveryDetailsRepository.existsByIdReserva(1L)).thenReturn(false);
         when(deliveryDetailsRepository.save(any(DeliveryDetails.class))).thenReturn(savedDetails);
 
-        deliveryEventListener.handleReservaCreated(new ReservaCreatedEvent(1L));
+        deliveryEventListener.handleReservaCreated(new ReservaCreatedEvent(1L,1L));
 
         verify(deliveryDetailsRepository).save(any(DeliveryDetails.class));
         verify(deliveryRepository).save(any(Delivery.class));
@@ -71,7 +71,7 @@ public class DeliveryEventListenerTest {
     void handleReservaCreated_alreadyExists_skipsCreation() {
         when(deliveryDetailsRepository.existsByIdReserva(1L)).thenReturn(true);
 
-        deliveryEventListener.handleReservaCreated(new ReservaCreatedEvent(1L));
+        deliveryEventListener.handleReservaCreated(new ReservaCreatedEvent(1L,1L));
 
         verify(deliveryDetailsRepository, never()).save(any());
         verify(deliveryRepository, never()).save(any());

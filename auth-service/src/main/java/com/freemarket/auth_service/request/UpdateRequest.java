@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 
 @Schema(description = "Solicitud para actualizar usuario")
 public class UpdateRequest {
-    private Long userId;
     private String email;
     private String password;    
     private String username;

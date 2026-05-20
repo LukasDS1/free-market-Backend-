@@ -15,8 +15,8 @@ public class ReservaEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void publishReservaCreated(Long idReserva) {
-        ReservaCreatedEvent event = new ReservaCreatedEvent(idReserva);
+    public void publishReservaCreated(Long idReserva, Long idUser) {
+        ReservaCreatedEvent event = new ReservaCreatedEvent(idReserva,idUser);
         rabbitTemplate.convertAndSend(
             RabbitMQConfig.EXCHANGE,
             RabbitMQConfig.ROUTING_KEY,

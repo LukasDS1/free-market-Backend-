@@ -35,6 +35,7 @@ public class DeliveryEventListener {
         DeliveryDetails details = new DeliveryDetails();
         details.setIdReserva(event.getIdReserva());
         details.setDeliveryBeginDate(LocalDate.now());
+        details.setIdUsuario(event.getIdUser());
         details.setDeliveryEndDate(LocalDate.now().plusDays(3));
         DeliveryDetails savedDetails = deliveryDetailsRepository.save(details);
 
