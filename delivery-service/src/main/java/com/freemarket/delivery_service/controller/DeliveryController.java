@@ -169,4 +169,9 @@ public ResponseEntity<List<DeliveryResponse>> getDeliveriesByStatus( @Parameter(
     return ResponseEntity.ok(deliveryService.getDeliveriesByStatus(status));
 }
 
+@GetMapping("/all")
+public ResponseEntity<List<DeliveryResponse>> getAllDeliveries() {
+    return ResponseEntity.ok(deliveryService.getAllDeliveries());
+}
+
 }

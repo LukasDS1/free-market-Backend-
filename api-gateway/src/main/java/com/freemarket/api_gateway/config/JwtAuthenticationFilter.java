@@ -33,32 +33,53 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final String SECRET_KEY = "VGhpc0lzQVNlY3VyZUtleUZvckpXVFdpdGhIbWFjU0hBMjU2IQ==";
 
     private static final List<String> PUBLIC_ROUTES = List.of(
-        "/api-v1/auth/login",
-        "/api-v1/auth/register",
-        "/api-v1/auth/refresh",
-        "/api-v1/auth/logout",
-        "/api-v1/config/system/country" ,
-        "/api-v1/productos/get" ,
-        "/api-v1/reserve/user/{idUser}"
-    );
+    "/api-v1/auth/login",
+    "/api-v1/auth/register",
+    "/api-v1/auth/refresh",
+    "/api-v1/auth/logout",
+    "/api-v1/productos/get",
+    "/api-v1/auth/password/reset-request",
+    "/api-v1/auth/password/reset");
 
     private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
-    Map.entry("POST:/api-v1/reserve/createReserve",  "CREATE_RESERVE"),
-    Map.entry("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE"),
-    Map.entry("GET:/api-v1/reserve",                  "READ_RESERVE"),
-    Map.entry("POST:/api-v1/productos",               "CREATE_PRODUCT"),
-    Map.entry("PATCH:/api-v1/productos",              "UPDATE_PRODUCT"),
-    Map.entry("DELETE:/api-v1/productos",             "DELETE_PRODUCT"),
+    // auth
     Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
-    Map.entry("PATCH:/api-v1/auth/setState",          "SET_STATE_USER"),
-    Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),      
+    Map.entry("PATCH:/api-v1/auth/setState/",         "SET_STATE_USER"),
+    Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),
     Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER"),
-    Map.entry("PATCH:/api-v1/config/system/country",   "UPDATE_SYSTEM_CONFIG"),
-    Map.entry("PATCH:/api-v1/delivery/reserva",         "UPDATE_DELIVERY_STATE"),
-    Map.entry("GET:/api-v1/delivery",  "READ_DELIVERY"),
-    Map.entry("GET:/api-v1/location",  "READ_LOCATION"),
-    Map.entry("POST:/api-v1/location",  "CREATE_LOCATION"),
-    Map.entry("PATCH:/api-v1/location", "UPDATE_LOCATION"));
+    Map.entry("GET:/api-v1/auth/getall",              "READ_USER"),
+    // productos
+    Map.entry("POST:/api-v1/productos/create",        "CREATE_PRODUCT"),
+    Map.entry("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT"),
+    Map.entry("DELETE:/api-v1/productos/delete/",     "DELETE_PRODUCT"),
+    // reserva
+    Map.entry("POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE"),
+    Map.entry("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE"),
+    Map.entry("GET:/api-v1/reserve/user/",            "READ_RESERVE"),
+    // config
+    Map.entry("POST:/api-v1/config/create",           "CREATE_SYSTEM_CONFIG"),
+    Map.entry("PATCH:/api-v1/config/update/",         "UPDATE_SYSTEM_CONFIG"),
+    Map.entry("GET:/api-v1/config/get/",              "READ_SYSTEM_CONFIG"),
+    // delivery
+    Map.entry("PATCH:/api-v1/delivery/reserva",       "UPDATE_DELIVERY_STATE"),
+    Map.entry("GET:/api-v1/delivery",                 "READ_DELIVERY"),
+    // location
+    Map.entry("POST:/api-v1/location/createLocation", "CREATE_LOCATION"),
+    Map.entry("PUT:/api-v1/location/updateLocation",  "UPDATE_LOCATION"),
+    Map.entry("GET:/api-v1/location/getLocation/",    "READ_LOCATION"),
+    Map.entry("GET:/api-v1/reserve/getallreserve",  "READ_RESERVE"),
+    Map.entry("GET:/api-v1/reserve/",               "READ_RESERVE"),
+    Map.entry("GET:/api-v1/delivery/all",           "READ_DELIVERY"),
+    Map.entry("DELETE:/api-v1/auth/delete",         "DELETE_USER"),
+    Map.entry("POST:/api-v1/privileges/modules",      "CREATE_ROL"),
+    Map.entry("GET:/api-v1/privileges/modules",       "READ_USER"),
+    Map.entry("GET:/api-v1/privileges/all",           "READ_USER"),
+    Map.entry("POST:/api-v1/privileges/create",       "CREATE_ROL"),
+    Map.entry("POST:/api-v1/privileges/asignar",      "CHANGE_ROL_USER"),
+    Map.entry("DELETE:/api-v1/privileges/eliminar/",  "CHANGE_ROL_USER"),
+    Map.entry("GET:/api-v1/privileges/role/",         "READ_USER"),
+    Map.entry("PATCH:/api-v1/reserve/cancel/", "DELETE_RESERVE")
+    );
 
     private final WebClient webClient;
     private final ReactiveCircuitBreaker circuitBreaker;

@@ -12,4 +12,7 @@ import com.freemarket.privileges_service.model.rolPrivileges;
 public interface RolPrivilegesRepository extends JpaRepository<rolPrivileges, Long> {
 @Query("SELECT rp FROM rolPrivileges rp JOIN FETCH rp.privilege p JOIN FETCH p.modulo WHERE rp.roleId = :roleId")
     List<rolPrivileges> findByRoleId(Long roleId);
+    void deleteByRoleIdAndPrivilege_PrivilegesId(Long roleId, Long privilegeId);
+    
+    boolean existsByRoleIdAndPrivilege_PrivilegesId(Long roleId, Long privilegeId);
 }

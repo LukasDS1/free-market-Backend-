@@ -42,6 +42,8 @@ SecurityFilterChain securityFilterChain(
     .authorizeHttpRequests(auth -> auth
         .requestMatchers(
             "/auth-swagger-ui",
+            "/api-v1/auth/password/reset-request",
+            "/api-v1/auth/password/reset",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
