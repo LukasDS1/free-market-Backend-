@@ -34,9 +34,17 @@ public class LoadDataBase {
                 Rol repartidor = new Rol(null, "REPARTIDOR", "REPARTIDOR ROL",new ArrayList<>());
                 rolRepository.save(repartidor);
 
-                User ADM = new User(null,"admin@freemarket.com",passwordEncoder.encode("Admin#2024!"),"admin",
-                "Free","Market", "MASCULINO", UserEnums.ACTIVO,null,null,admin);
+                User ADM = new User(null,"admin@freemarket.com",passwordEncoder.encode("admin"),"admin",
+                "Free","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,admin);
                 userRepository.save(ADM);
+
+                User USR = new User(null,"user@freemarket.com",passwordEncoder.encode("user"),"user",
+                "user","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,admin);
+                userRepository.save(USR);
+
+                User RTD = new User(null,"repartidor@freemarket.com",passwordEncoder.encode("repartidor"),"repartidor",
+                "repartidor","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,admin);
+                userRepository.save(RTD);
 
             }else{
                 System.out.println("Datos ya existen. No se cargaron.");

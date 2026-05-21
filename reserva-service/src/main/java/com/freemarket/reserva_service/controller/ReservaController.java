@@ -81,7 +81,7 @@ public class ReservaController {
     }
 
 
-    @GetMapping("/user/{idUser}")
+@GetMapping("/user/{idUser}")
 @Operation(
     summary = "Obtener reservas por usuario",
     description = "Retorna todas las reservas asociadas a un usuario con el detalle de sus productos"
@@ -108,5 +108,63 @@ public ResponseEntity<List<ReservaDetalleResponse>> getReservasByUser(
     @Parameter(description = "ID del usuario a consultar", example = "42", required = true)
     @PathVariable Long idUser) {
     return ResponseEntity.ok().body(reservaService.getReservasByUser(idUser));
+}
+
+@GetMapping("/getallreserve")
+@Operation(
+    summary = "Obtener todas las reservaso",
+    description = "Retorna todas las reservas existentes"
+)
+@ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Reservas obtenidas exitosamente",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ReservaDetalleResponse.class))
+    ),
+    @ApiResponse(
+        responseCode = "404",
+        description = " reservas no encontradas",
+        content = @Content(mediaType = "application/json")
+    )
+})
+public ResponseEntity<List<ReservaResponse>> getAllreservas() {
+    return ResponseEntity.ok().body(reservaService.getAllReservas());
+}
+
+@GetMapping("/{idReserva}")
+@Operation(
+    summary = "Obtener una reserva por su id",
+    description = "Retorna todas la reserva por su id"
+)
+@ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Reserva obtenida exitosamente",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ReservaDetalleResponse.class))
+    ),
+    @ApiResponse(
+        responseCode = "404",
+        description = " reservas no encontrada ",
+        content = @Content(mediaType = "application/json")
+    )
+})
+public ResponseEntity<ReservaDetalleResponse> getReservaById(@PathVariable Long idReserva) {
+    return ResponseEntity.ok().body(reservaService.getReservaById(idReserva));
+}
+
+@PatchMapping("/cancel/{idReserva}")
+@Operation(summary = "Cancelar reserva por admin", description = "Cancela una reserva específica por su ID, solo admin")
+@ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Reserva cancelada exitosamente"),
+    @ApiResponse(responseCode = "404", description = "Reserva no encontrada",
+        content = @Content(mediaType = "application/json")),
+    @ApiResponse(responseCode = "400", description = "La reserva ya está cancelada",
+        content = @Content(mediaType = "application/json"))
+})
+public ResponseEntity<?> cancelReservaAdmin(@PathVariable Long idReserva) {
+    reservaService.cancelReservaAdmin(idReserva);
+    return ResponseEntity.ok().build();
 }
 }

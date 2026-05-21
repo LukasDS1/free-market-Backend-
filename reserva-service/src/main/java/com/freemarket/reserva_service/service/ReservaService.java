@@ -2,6 +2,7 @@ package com.freemarket.reserva_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +43,48 @@ public class ReservaService {
     private final ReservaEventPublisher eventPublisher;
 
     private final ReservaPendienteProducer pendienteProducer;
+
+
+    public List<ReservaResponse> getAllReservas(){
+        List <Reserve> reservas =  reserveRepository.findAll();
+        List <ReservaResponse> returnlist = new ArrayList<>();
+
+        for(Reserve r : reservas){
+            ReservaResponse response = new ReservaResponse();
+
+            response.setIdReserva(r.getIdReserva());
+            response.setReserveDate(r.getReserveDate());
+            response.setStatus(r.getStatus().toString());
+            response.setTotalPrice(r.getTotalPrice());
+            returnlist.add(response);
+        }
+        return returnlist;
+    }
+
+    public ReservaDetalleResponse getReservaById(Long idReserva) {
+        
+    Reserve reserve = reserveRepository.findById(idReserva)
+        .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
+
+    List<ProductoReservaResponse> products = reserve.getReserveDetails()
+        .stream()
+        .map(detail -> new ProductoReservaResponse(
+            detail.getProduct().getIdProduct(),
+            detail.getProduct().getProductname(),
+            detail.getUnitPrice(),
+            detail.getQuanty(),
+            detail.getUnitPrice() * detail.getQuanty()
+        ))
+        .toList();
+
+    return new ReservaDetalleResponse(
+        reserve.getIdReserva(),
+        reserve.getReserveDate(),
+        reserve.getTotalPrice(),
+        reserve.getStatus().name(),
+        products
+    );
+}
 
    
     public ReservaResponse createReserva(ReserveRequest request,String idempotencyKey) {
@@ -235,6 +278,24 @@ public class ReservaService {
     }).toList();
 }
 
+public void cancelReservaAdmin(Long idReserva) {
+    Reserve reserve = reserveRepository.findById(idReserva)
+        .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
+
+    if (reserve.getStatus().equals(ReserveStatus.CANCELADO)) {
+        throw new IllegalArgumentException("La reserva ya está cancelada");
+    }
+
+    for (ReserveDetails detail : reserve.getReserveDetails()) {
+        Product stockRecuperado = detail.getProduct();
+        stockRecuperado.setProductStock(stockRecuperado.getProductStock() + detail.getQuanty());
+        productRepository.save(stockRecuperado);
+    }
+
+    reserve.setStatus(ReserveStatus.CANCELADO);
+    reserveRepository.save(reserve);
+    eventPublisher.publishReservaCancelled(idReserva);
+}
  
 
 

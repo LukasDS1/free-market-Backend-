@@ -1,7 +1,10 @@
 package com.freemarket.auth_service.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,9 +17,12 @@ import com.freemarket.auth_service.model.User;
 import com.freemarket.auth_service.repository.RolRepository;
 import com.freemarket.auth_service.repository.UserRepository;
 import com.freemarket.auth_service.request.LoginRequest;
+import com.freemarket.auth_service.request.PasswordChangeRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
+import com.freemarket.auth_service.response.UserResponse;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,7 +35,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RolRepository rolRepository;
-
+    private final EmailService emailService;
 
 
     public AuthResponse login(LoginRequest request) {
@@ -227,6 +233,61 @@ private AuthResponse buildAuthResponse(User user) {
        }
        userRespository.save(exist);
 
+    }
+
+    public List<UserResponse> getAllResponseUser(){
+        List<User> users = userRespository.findAll();
+        List<UserResponse> returnlist = new ArrayList<>();
+
+        for(User u : users){
+            UserResponse response = new UserResponse();
+            response.setId(u.getUserId());
+            response.setState(u.getStatus().toString());
+            response.setFirstname(u.getFirstName());
+            response.setLastname(u.getLastName());
+            response.setEmail(u.getEmail());
+            response.setPassword(passwordEncoder.encode(u.getPassword()));
+            response.setUsername(u.getUsername());
+            response.setRol(u.getRol().getRolName());
+            response.setGenero(u.getGenre());
+            returnlist.add(response);
+        }
+
+        return returnlist;
+    }
+
+    public void requestPasswordReset(String email) {
+    User user = userRespository.findByEmail(email)
+        .orElseThrow(() -> new IllegalArgumentException("Email no encontrado"));
+
+    String token = UUID.randomUUID().toString();
+    user.setResetTokenPassword(token);
+    user.setResetTokenPasswordExpiry(Instant.now().plusSeconds(900));
+    userRespository.save(user);
+
+    emailService.sendPasswordReset(email, token);
+
+    }
+
+public void resetPassword(PasswordChangeRequest request) {
+    User user = userRespository.findByResetTokenPassword(request.getToken())
+        .orElseThrow(() -> new IllegalArgumentException("Token inválido"));
+
+    if (user.getResetTokenPasswordExpiry().isBefore(Instant.now())) {
+        throw new IllegalArgumentException("Token expirado");
+    }
+    if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+        throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior");
+    }
+
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    user.setResetTokenPassword(null);
+    user.setResetTokenPasswordExpiry(null);
+    userRespository.save(user);
+    }
+
+    public void deleteUser(Long id){
+        userRespository.deleteById(id);
     }
 
 }

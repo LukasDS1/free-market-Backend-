@@ -6,12 +6,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.freemarket.auth_service.model.Rol;
 import com.freemarket.auth_service.request.CreateRolRequest;
 import com.freemarket.auth_service.request.LoginRequest;
+import com.freemarket.auth_service.request.PasswordChangeRequest;
+import com.freemarket.auth_service.request.PasswordResetRequest;
 import com.freemarket.auth_service.request.RegisterRequest;
 import com.freemarket.auth_service.request.RolChangeRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
+import com.freemarket.auth_service.response.UserResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.freemarket.auth_service.service.RolService;
 
@@ -386,6 +392,59 @@ public ResponseEntity<Void> changeUserRol(@RequestBody RolChangeRequest request)
     rolService.changeUserRol(request);
     return ResponseEntity.ok().build();
 }
+
+
+
+@GetMapping("/getall")
+@Operation(summary = "obtener todos los usuarios", description = "obtener todos los usuarios")
+@ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "usuarios encontrados"),
+    @ApiResponse(responseCode = "404", description = "Usuario no encontrados",
+        content = @Content(examples = @ExampleObject(value = "User not found")))
+})
+public ResponseEntity<List<UserResponse>> getAllUsers () {
+    return ResponseEntity.ok().body(authService.getAllResponseUser());
+}
+
+
+@DeleteMapping("/delete")
+@Operation(summary = "eliminar usuario", description = "eliminar usuario  por id")
+@ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "usuario eliminado"),
+    @ApiResponse(responseCode = "404", description = "Usuari no encontrados",
+        content = @Content(examples = @ExampleObject(value = "User not found")))
+})
+public ResponseEntity<?> delete(@RequestHeader ("X-User-Id") Long id) {
+    authService.deleteUser(id);
+    return ResponseEntity.ok().build();
+}
+
+@PostMapping("/password/reset-request")
+@Operation(summary = "Solicitar recuperación de contraseña", description = "Envía un token al email del usuario")
+@ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Token enviado exitosamente"),
+    @ApiResponse(responseCode = "404", description = "Email no encontrado",
+        content = @Content(examples = @ExampleObject(value = "Email no encontrado")))
+})
+public ResponseEntity<Void> requestPasswordReset(@RequestBody PasswordResetRequest request) {
+    authService.requestPasswordReset(request.getEmail());
+    return ResponseEntity.ok().build();
+}
+
+@PostMapping("/password/reset")
+@Operation(summary = "Cambiar contraseña", description = "Cambia la contraseña usando el token recibido por email")
+@ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Contraseña cambiada exitosamente"),
+    @ApiResponse(responseCode = "400", description = "Token inválido, expirado o contraseña igual a la anterior",
+        content = @Content(examples = @ExampleObject(value = "Token inválido"))),
+    @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+        content = @Content(examples = @ExampleObject(value = "Usuario no encontrado")))
+})
+public ResponseEntity<Void> resetPassword(@RequestBody PasswordChangeRequest request) {
+    authService.resetPassword(request);
+    return ResponseEntity.ok().build();
+}
+
 
 }
 

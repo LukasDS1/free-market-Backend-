@@ -82,8 +82,14 @@ public class User implements UserDetails {
     private String refreshToken;
 
     @Column(nullable = true)
-      @Schema(description = "Fecha de expritacion del token de actualizacion", example = "2026-01-12")
+    @Schema(description = "Fecha de expritacion del token de actualizacion", example = "2026-01-12")
     private Instant refreshTokenExpiry;
+
+    @Column(nullable = true)
+    private String resetTokenPassword;
+
+   @Column(nullable = true)
+   private Instant resetTokenPasswordExpiry;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol")

@@ -1,6 +1,8 @@
 package com.freemarket.delivery_service.service;
 
 import com.freemarket.delivery_service.messaging.DeliveryEventPublisher;
+
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -31,15 +33,22 @@ public class DeliveryService {
     }
 
     public DeliveryResponse updateStatus(Long idReserva, DeliveryStatus newStatus) {
+        
         Delivery delivery = findByReserva(idReserva);
         validateTransition(delivery.getStatus(), newStatus);
 
         delivery.setStatus(newStatus);
+
+        if (newStatus.equals(DeliveryStatus.ENTREGADO)) {
+        delivery.getDeliveryDetails().setDeliveryEndDate(LocalDate.now());
+        }
+
         Delivery saved = deliveryRepository.save(delivery);
         
         if(newStatus.equals(DeliveryStatus.ENTREGADO)){
             deliveryEventPublisher.publishDeliveryCompletado(saved.getDeliveryDetails().getIdReserva());
         }
+        
 
         return toResponse(saved);
     }
@@ -88,6 +97,13 @@ public class DeliveryService {
 
     public List<DeliveryResponse> getDeliveriesByStatus(DeliveryStatus status) {
     return deliveryRepository.findByStatus(status)
+        .stream()
+        .map(this::toResponse)
+        .toList();
+}
+
+public List<DeliveryResponse> getAllDeliveries() {
+    return deliveryRepository.findAll()
         .stream()
         .map(this::toResponse)
         .toList();
