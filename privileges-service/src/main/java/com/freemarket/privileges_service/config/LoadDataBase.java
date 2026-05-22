@@ -73,6 +73,9 @@ public class LoadDataBase {
                 Privileges ChangeRolUser = new Privileges(null, "CHANGE_ROL_USER", ModuloUser);
                 privilegesRepository.save(ChangeRolUser);
 
+                Privileges ReadRol = new Privileges(null,"READ_ROL",ModuloUser);
+                privilegesRepository.save(ReadRol);
+
                 Privileges CreateLocation = new Privileges(null, "CREATE_LOCATION", ModuloLocation);
                 Privileges UpdateLocation = new Privileges(null, "UPDATE_LOCATION", ModuloLocation);
                 privilegesRepository.save(CreateLocation);
@@ -180,6 +183,7 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadReserve));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, DeleteUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, DeleteUser));
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadRol));
 
                 rolPrivilegesRepository.saveAll(rolePrivilegesList);
 

@@ -34,6 +34,27 @@ public class ConfigController {
 
     private final configService configService;
 
+    @Operation(
+        summary = "Obtener la  configuración global sin autenticar",
+        description = "obtener la configuración visual inicial de un comercio"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Configuración obtenida exitosamente",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConfigResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "configuracion no encontrada",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    @GetMapping("/public")
+    public ResponseEntity<ConfigResponse> getPublicConfig() {
+    return ResponseEntity.ok().body(configService.getPublicConfiguration());
+    }
+
     @PostMapping("/create")
     @Operation(
         summary = "Crear configuración",

@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Schema(description = "Datos de respuesta con la configuración visual del comercio")
 public class ConfigResponse {
-
+    @Schema(description = "id de la configuracion", example = "Mi Tienda Online")
+    public Long id;
     @Schema(description = "Nombre del comercio", example = "Mi Tienda Online")
     public String commerceName;
 

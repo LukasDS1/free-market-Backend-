@@ -13,6 +13,7 @@ import com.freemarket.auth_service.request.RolChangeRequest;
 import com.freemarket.auth_service.request.UpdateRequest;
 import com.freemarket.auth_service.response.AuthResponse;
 import com.freemarket.auth_service.response.UserResponse;
+import com.freemarket.auth_service.response.rolResponse;
 import com.freemarket.auth_service.service.AuthService;
 import lombok.AllArgsConstructor;
 
@@ -48,6 +49,13 @@ import jakarta.validation.Valid;
 public class AuthController {
 private final AuthService authService;
     private final RolService rolService;
+
+
+@DeleteMapping("/delete/admin/{id}")
+public ResponseEntity<?> deleteByAdmin(@PathVariable Long id) {
+    authService.deleteUserByAdmin(id);
+    return ResponseEntity.ok().build();
+}
 
 @PatchMapping("/setState/{id}")
 @Operation(
@@ -90,6 +98,13 @@ public ResponseEntity<?> setState(@PathVariable Long id) {
     return ResponseEntity.ok().build();
 }
 
+
+@GetMapping("/rol/getall")
+@Operation(summary = "Obtener roles",description = "Retorna todos los roles del sistema")
+public ResponseEntity<List<rolResponse>> getAllRoles() {
+    return ResponseEntity.ok(rolService.findAll());
+
+}
 
 
 
@@ -279,10 +294,6 @@ public ResponseEntity<Boolean> getRolById(
     return ResponseEntity.ok(
             rolService.existById(id));
 }
-
-
-
-
 @GetMapping("/{id}")
 
 @Operation(
@@ -291,12 +302,10 @@ public ResponseEntity<Boolean> getRolById(
 )
 
 @ApiResponses(value = {
-
     @ApiResponse(
         responseCode = "200",
         description = "Consulta realizada correctamente"
     ),
-
     @ApiResponse(
         responseCode = "404",
         description = "Usuario no encontrado",

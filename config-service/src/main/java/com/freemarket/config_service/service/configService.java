@@ -68,7 +68,7 @@ public class configService {
         Configuration saved = configRepo.save(config);
 
         ConfigResponse response = new ConfigResponse();
-
+        response.setId(saved.getIdConfig());
         response.setCommerceName(saved.getCommerceName());
         response.setLogoUrl(saved.getLogoUrl());
         response.setFavicomUrl(saved.getFavicomUrl());
@@ -129,6 +129,7 @@ public class configService {
     Configuration saved = configRepo.save(config);
 
     ConfigResponse response = new ConfigResponse();
+    response.setId(saved.getIdConfig());
     response.setCommerceName(saved.getCommerceName());
     response.setLogoUrl(saved.getLogoUrl());
     response.setFavicomUrl(saved.getFavicomUrl());
@@ -145,6 +146,7 @@ public class configService {
 public ConfigResponse getConfigurationByIdUser(Long idUser) {
     Configuration config = configRepo.findByIdUser(idUser).orElseThrow(() -> new IllegalStateException());
     ConfigResponse response = new ConfigResponse();
+    response.setId(config.getIdConfig());
     response.setCommerceName(config.getCommerceName());
     response.setLogoUrl(config.getLogoUrl());
     response.setFavicomUrl(config.getFavicomUrl());
@@ -188,6 +190,28 @@ private void encolarCreate(ConfigRequest request) {
     pendienteProducer.enviarConfigPendiente(
         toEvent(request, ConfigPendienteEvent.OperationType.CREATE)
     );
+}
+
+
+public ConfigResponse getPublicConfiguration() {
+    return configRepo.findAll()
+        .stream()
+        .findFirst()
+        .map(this::toResponse)
+        .orElseThrow(() -> new RuntimeException("No config found"));
+}
+
+private ConfigResponse toResponse(Configuration config) {
+    ConfigResponse response = new ConfigResponse();
+    response.setId(config.getIdConfig());
+    response.setCommerceName(config.getCommerceName());
+    response.setLogoUrl(config.getLogoUrl());
+    response.setFavicomUrl(config.getFavicomUrl());
+    response.setPrimaryColor(config.getPrimarColor());
+    response.setSecondaryColor(config.getSecondaryColor());
+    response.setPrincipalFont(config.getPrincipalfont());
+    response.setUpdateDate(config.getUpdateAt());
+    return response;
 }
 
 }

@@ -36,6 +36,7 @@ public class JwtService {
     extraClaims.put("status", u.getStatus().name());
     extraClaims.put("userId", u.getUserId());
 
+
     return getToken(extraClaims, user);
 }
 public List<String> getRolesFromToken(String token) {
