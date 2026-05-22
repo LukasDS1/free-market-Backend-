@@ -39,11 +39,11 @@ public class LoadDataBase {
                 userRepository.save(ADM);
 
                 User USR = new User(null,"user@freemarket.com",passwordEncoder.encode("user"),"user",
-                "user","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,admin);
+                "user","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,Usuario);
                 userRepository.save(USR);
 
                 User RTD = new User(null,"repartidor@freemarket.com",passwordEncoder.encode("repartidor"),"repartidor",
-                "repartidor","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,admin);
+                "repartidor","Market", "MASCULINO", UserEnums.ACTIVO,null,null,null,null,repartidor);
                 userRepository.save(RTD);
 
             }else{

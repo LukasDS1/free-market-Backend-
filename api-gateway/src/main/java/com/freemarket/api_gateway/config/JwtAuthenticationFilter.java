@@ -39,15 +39,22 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     "/api-v1/auth/logout",
     "/api-v1/productos/get",
     "/api-v1/auth/password/reset-request",
-    "/api-v1/auth/password/reset");
+    "/api-v1/auth/password/reset",
+    "/api-v1/config/public"
+    );
 
     private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
+        
     // auth
     Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
     Map.entry("PATCH:/api-v1/auth/setState/",         "SET_STATE_USER"),
     Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),
     Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER"),
     Map.entry("GET:/api-v1/auth/getall",              "READ_USER"),
+    Map.entry("DELETE:/api-v1/auth/delete/admin/",    "DELETE_USER"),
+    Map.entry("GET:/api-v1/auth/rol/getall",          "READ_ROL"),
+
+   
     // productos
     Map.entry("POST:/api-v1/productos/create",        "CREATE_PRODUCT"),
     Map.entry("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT"),
@@ -170,7 +177,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     return chain.filter(mutatedExchange);
                 }
             );
-
         } catch (Exception e) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();

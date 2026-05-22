@@ -32,7 +32,7 @@ public class Product {
     private String productname;
 
     @Column 
-    (nullable = false)
+    (nullable = false,columnDefinition = "LONGTEXT")
     private String url;
     
     @Column 

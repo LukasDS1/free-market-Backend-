@@ -15,9 +15,9 @@ public class UserResponse {
     public String firstname;
     public String lastname;
     public String email;
-    public String password;
     public String username;
     public String rol;
     public String genero;
+    public Long idRol; 
 
 }

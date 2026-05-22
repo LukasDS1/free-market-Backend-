@@ -51,7 +51,6 @@ public class ReservaService {
 
         for(Reserve r : reservas){
             ReservaResponse response = new ReservaResponse();
-
             response.setIdReserva(r.getIdReserva());
             response.setReserveDate(r.getReserveDate());
             response.setStatus(r.getStatus().toString());
@@ -60,9 +59,8 @@ public class ReservaService {
         }
         return returnlist;
     }
-
+    
     public ReservaDetalleResponse getReservaById(Long idReserva) {
-        
     Reserve reserve = reserveRepository.findById(idReserva)
         .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
 
@@ -76,7 +74,6 @@ public class ReservaService {
             detail.getUnitPrice() * detail.getQuanty()
         ))
         .toList();
-
     return new ReservaDetalleResponse(
         reserve.getIdReserva(),
         reserve.getReserveDate(),

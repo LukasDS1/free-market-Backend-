@@ -246,8 +246,8 @@ private AuthResponse buildAuthResponse(User user) {
             response.setFirstname(u.getFirstName());
             response.setLastname(u.getLastName());
             response.setEmail(u.getEmail());
-            response.setPassword(passwordEncoder.encode(u.getPassword()));
             response.setUsername(u.getUsername());
+            response.setIdRol(u.getRol().getRolId());
             response.setRol(u.getRol().getRolName());
             response.setGenero(u.getGenre());
             returnlist.add(response);
@@ -289,5 +289,11 @@ public void resetPassword(PasswordChangeRequest request) {
     public void deleteUser(Long id){
         userRespository.deleteById(id);
     }
+
+    public void deleteUserByAdmin(Long id){
+        userRespository.deleteById(id);
+    }
+
+
 
 }

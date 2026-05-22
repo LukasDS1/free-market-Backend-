@@ -62,7 +62,8 @@ SecurityFilterChain securityFilterChain(
             "/api-v1/auth/logout",
             "/api-v1/auth/setState/**",
             "/api-v1/auth/rol",          
-            "/api-v1/auth/rol/change"    
+            "/api-v1/auth/rol/change",
+            "/api-v1/auth/rol/getall"    
         ).authenticated()
         .anyRequest().authenticated()
     )

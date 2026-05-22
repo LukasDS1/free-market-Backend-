@@ -34,11 +34,11 @@ public class Configuration {
     @Schema(description = "ID del usuario propietario del comercio", example = "42")
     private Long idUser;
 
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "LONGTEXT")
     @Schema(description = "URL del logo del comercio", example = "https://cdn.mitienda.com/logo.png")
     private String LogoUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "LONGTEXT")
     @Schema(description = "URL del favicon del comercio", example = "https://cdn.mitienda.com/favicon.ico")
     private String favicomUrl;
 
