@@ -11,12 +11,16 @@ import lombok.NoArgsConstructor;
 
 @Schema(description = "Solicitud para actualizar usuario")
 public class UpdateRequest {
+    @Schema(description = "Email del usuario", example = "nuevo@gmail.com")
     private String email;
-    private String password;    
+    @Schema(description = "Contraseña", example = "nuevaPass123")
+    private String password;
+    @Schema(description = "Nombre de usuario", example = "luka123")
     private String username;
+    @Schema(description = "Nombre", example = "Lucas")
     private String firstName;
+    @Schema(description = "Apellido", example = "Pérez")
     private String lastName;
+    @Schema(description = "Género", example = "Masculino")
     private String genre;
-
-
 }

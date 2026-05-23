@@ -13,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -43,6 +42,10 @@ public class DeliveryDetails {
     @Column 
     (nullable = false)
     private Long idUsuario;
+
+    @Column
+    (nullable = true)
+    private Long idRepartidor; 
 
    @OneToOne(mappedBy = "deliveryDetails", fetch = FetchType.LAZY)
     private Delivery delivery;

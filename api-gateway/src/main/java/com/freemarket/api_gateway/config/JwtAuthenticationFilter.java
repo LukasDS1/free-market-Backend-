@@ -43,50 +43,68 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     "/api-v1/config/public"
     );
 
-    private static final Map<String, String> ROUTE_PRIVILEGES = Map.ofEntries(
-        
-    // auth
-    Map.entry("PATCH:/api-v1/auth/update",            "UPDATE_USER"),
-    Map.entry("PATCH:/api-v1/auth/setState/",         "SET_STATE_USER"),
-    Map.entry("POST:/api-v1/auth/rol",                "CREATE_ROL"),
-    Map.entry("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER"),
-    Map.entry("GET:/api-v1/auth/getall",              "READ_USER"),
-    Map.entry("DELETE:/api-v1/auth/delete/admin/",    "DELETE_USER"),
-    Map.entry("GET:/api-v1/auth/rol/getall",          "READ_ROL"),
+    // Reemplaza el Map.ofEntries por esto:
+private static final Map<String, String> ROUTE_PRIVILEGES;
 
-   
+static {
+    ROUTE_PRIVILEGES = new java.util.LinkedHashMap<>();
+    
+    // auth
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/update",            "UPDATE_USER");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/setState/",         "SET_STATE_USER");
+    ROUTE_PRIVILEGES.put("POST:/api-v1/auth/rol",                "CREATE_ROL");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/auth/getall",              "READ_USER");
+    ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete/admin/",    "DELETE_USER");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/auth/rol/getall",          "READ_ROL");
+
     // productos
-    Map.entry("POST:/api-v1/productos/create",        "CREATE_PRODUCT"),
-    Map.entry("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT"),
-    Map.entry("DELETE:/api-v1/productos/delete/",     "DELETE_PRODUCT"),
+    ROUTE_PRIVILEGES.put("POST:/api-v1/productos/create",        "CREATE_PRODUCT");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT");
+    ROUTE_PRIVILEGES.put("DELETE:/api-v1/productos/delete/",     "DELETE_PRODUCT");
+
     // reserva
-    Map.entry("POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE"),
-    Map.entry("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE"),
-    Map.entry("GET:/api-v1/reserve/user/",            "READ_RESERVE"),
+    ROUTE_PRIVILEGES.put("POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel/",        "DELETE_RESERVE");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/getallreserve",    "READ_RESERVE");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/user/",            "READ_RESERVE");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/",                 "READ_RESERVE");
+
     // config
-    Map.entry("POST:/api-v1/config/create",           "CREATE_SYSTEM_CONFIG"),
-    Map.entry("PATCH:/api-v1/config/update/",         "UPDATE_SYSTEM_CONFIG"),
-    Map.entry("GET:/api-v1/config/get/",              "READ_SYSTEM_CONFIG"),
-    // delivery
-    Map.entry("PATCH:/api-v1/delivery/reserva",       "UPDATE_DELIVERY_STATE"),
-    Map.entry("GET:/api-v1/delivery",                 "READ_DELIVERY"),
+    ROUTE_PRIVILEGES.put("POST:/api-v1/config/create",           "CREATE_SYSTEM_CONFIG");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/config/update/",         "UPDATE_SYSTEM_CONFIG");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/config/get/",              "READ_SYSTEM_CONFIG");
+
+    // delivery — MÁS ESPECÍFICAS PRIMERO
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva/status/","UPDATE_DELIVERY_STATE");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva",        "UPDATE_DELIVERY_STATE");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/take",            "PATCH_DELIVERY");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/status/",          "READ_DELIVERY");  
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/delivery/",        "READ_DELIVERY");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reserva/",         "READ_DELIVERY");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/usuario/",         "READ_DELIVERY");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/all",              "READ_DELIVERY");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/",                 "READ_DELIVERY"); 
+    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery",                  "READ_DELIVERY");
+
     // location
-    Map.entry("POST:/api-v1/location/createLocation", "CREATE_LOCATION"),
-    Map.entry("PUT:/api-v1/location/updateLocation",  "UPDATE_LOCATION"),
-    Map.entry("GET:/api-v1/location/getLocation/",    "READ_LOCATION"),
-    Map.entry("GET:/api-v1/reserve/getallreserve",  "READ_RESERVE"),
-    Map.entry("GET:/api-v1/reserve/",               "READ_RESERVE"),
-    Map.entry("GET:/api-v1/delivery/all",           "READ_DELIVERY"),
-    Map.entry("DELETE:/api-v1/auth/delete",         "DELETE_USER"),
-    Map.entry("POST:/api-v1/privileges/modules",      "CREATE_ROL"),
-    Map.entry("GET:/api-v1/privileges/modules",       "READ_USER"),
-    Map.entry("GET:/api-v1/privileges/all",           "READ_USER"),
-    Map.entry("POST:/api-v1/privileges/create",       "CREATE_ROL"),
-    Map.entry("POST:/api-v1/privileges/asignar",      "CHANGE_ROL_USER"),
-    Map.entry("DELETE:/api-v1/privileges/eliminar/",  "CHANGE_ROL_USER"),
-    Map.entry("GET:/api-v1/privileges/role/",         "READ_USER"),
-    Map.entry("PATCH:/api-v1/reserve/cancel/", "DELETE_RESERVE")
-    );
+    ROUTE_PRIVILEGES.put("POST:/api-v1/location/createLocation",  "CREATE_LOCATION");
+    ROUTE_PRIVILEGES.put("PUT:/api-v1/location/updateLocation",   "UPDATE_LOCATION");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/location/getLocation/",     "READ_LOCATION");
+
+    // privileges
+    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/modules",       "CREATE_ROL");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/modules",        "READ_USER");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/all",            "READ_USER");
+    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/create",        "CREATE_ROL");
+    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/asignar",       "CHANGE_ROL_USER");
+    ROUTE_PRIVILEGES.put("DELETE:/api-v1/privileges/eliminar/",   "CHANGE_ROL_USER");
+    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/role/",          "READ_USER");
+
+    // auth delete
+    ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete",            "DELETE_USER");
+    }
 
     private final WebClient webClient;
     private final ReactiveCircuitBreaker circuitBreaker;

@@ -6,15 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.freemarket.delivery_service.enums.DeliveryStatus;
 import com.freemarket.delivery_service.model.Delivery;
+import com.freemarket.delivery_service.request.ToDeliveryRequest;
 import com.freemarket.delivery_service.response.DeliveryResponse;
 import com.freemarket.delivery_service.service.DeliveryService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,6 +34,53 @@ import lombok.RequiredArgsConstructor;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
+
+    @GetMapping("/delivery/{idRepartidor}")
+    @Operation(
+        summary = "Obtener delivery por repartidor",
+        description = "Retorna el delivery y sus detalles asociados a un repartidor específica"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Delivery encontrado exitosamente",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = DeliveryResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontró delivery para esa reserva",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    public ResponseEntity<List<DeliveryResponse>> getDeliveryByRepartidor(
+    @PathVariable Long idRepartidor) {
+    return ResponseEntity.ok(deliveryService.getDeliveriesByRepartidor(idRepartidor));
+}
+
+    @PatchMapping("/take")
+    @Operation(
+        summary = "Obtener delivery por repartidor",
+        description = "Retorna el delivery y sus detalles asociados a un repartidor específica"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Delivery encontrado exitosamente",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = DeliveryResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No se encontró delivery para esa reserva",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    public ResponseEntity<?> tomarDelivery(
+        @RequestBody ToDeliveryRequest deliveryRequest,@RequestHeader("X-User-Id") Long idRepartidor) {
+    deliveryService.takeDelivery(deliveryRequest.getIdDeliveryDetails(), idRepartidor);
+    return ResponseEntity.ok().build();
+}
 
     @GetMapping("/reserva/{idReserva}")
     @Operation(

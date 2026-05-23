@@ -17,7 +17,7 @@ public class DeliveryResponse {
     private Long idDelivery;
 
     @Schema(description = "Estado actual del delivery", example = "EN_CAMINO",
-        allowableValues = {"PENDIENTE", "EN_CAMINO", "ENTREGADO", "CANCELADO"})
+    allowableValues = {"PENDIENTE", "EN_CAMINO", "ENTREGADO", "CANCELADO"})
     private String status;
 
     @Schema(description = "ID de la reserva asociada al delivery", example = "10")
@@ -26,9 +26,20 @@ public class DeliveryResponse {
     @Schema(description = "ID del usuario asociada al delivery", example = "1")
     private Long idUsuario; 
 
+    @Schema(description = "ID del repartidor asignado", example = "5")
+    private Long idRepartidor;
+
+    @Schema(description = "ID del delivery details asociado", example = "5")
+    private Long idDeliveryDetails;
+
+
     @Schema(description = "Fecha de inicio del delivery", example = "2026-05-07")
     private LocalDate deliveryBeginDate;
 
     @Schema(description = "Fecha estimada de entrega", example = "2026-05-10")
     private LocalDate deliveryEndDate;
+
+
+
+
 }

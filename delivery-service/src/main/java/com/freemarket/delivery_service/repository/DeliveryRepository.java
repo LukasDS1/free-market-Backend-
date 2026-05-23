@@ -14,6 +14,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery,Long> {
     Optional<Delivery> findByDeliveryDetails_IdReserva(Long idReserva);
     List<Delivery> findByDeliveryDetails_IdUsuario(Long idUsuario);
     List<Delivery> findByStatus(DeliveryStatus status);
+    Optional<Delivery> findByDeliveryDetails_IdDeliveryDetails(Long idDeliveryDetails);
     
 
 
