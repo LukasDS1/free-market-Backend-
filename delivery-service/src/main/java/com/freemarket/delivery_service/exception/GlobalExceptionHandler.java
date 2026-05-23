@@ -60,13 +60,16 @@ public class GlobalExceptionHandler {
         ));
     }
 
+   
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-            "timestamp", LocalDateTime.now().toString(),
-            "status",    500,
-            "error",     "Internal Server Error",
-            "message",   "Error inesperado en el servidor"
-        ));
-    }
+    ex.printStackTrace(); // ✅ para ver el error real en consola
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+        "timestamp", LocalDateTime.now().toString(),
+        "status",    500,
+        "error",     "Internal Server Error",
+        "message",   ex.getMessage() != null ? ex.getMessage() : "Error inesperado" 
+    ));
+}
 }

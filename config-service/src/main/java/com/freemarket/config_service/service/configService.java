@@ -82,63 +82,26 @@ public class configService {
     }
 
     //update
-    public ConfigResponse updateConfiguration(Long idUser, ConfigRequest request) {
-        Boolean exist = rest.getUserById(request.getIdUser());
+    public ConfigResponse updateConfiguration(Long idConfig, ConfigRequest request) {
+    Configuration config = configRepo.findById(idConfig)
+        .orElseThrow(() -> new IllegalStateException("Configuración no encontrada"));
 
-        if(exist == null){
-            encolarUpdate(request);
-            throw new ServiceUnavailableException("Service is not avalible");
-        }
-
-        if(!exist){
-            throw new IllegalArgumentException();
-        }
-
-    Configuration config = configRepo.findByIdUser(idUser)
-        .orElseThrow(() -> new IllegalStateException());
-
-   
     if (request.getCommerceName() != null) {
         centraliceValidation(request.getCommerceName());
         config.setCommerceName(request.getCommerceName());
     }
-
-    if (request.getLogoUrl() != null) {
-        config.setLogoUrl(request.getLogoUrl());
-    }
-
-    if (request.getFavicomUrl() != null) {
-        config.setFavicomUrl(request.getFavicomUrl());
-    }
-
-    if (request.getPrimaryColor() != null) {
-        config.setPrimarColor(request.getPrimaryColor());
-    }
-
-    if (request.getSecondaryColor() != null) {
-        config.setSecondaryColor(request.getSecondaryColor());
-    }
-
+    if (request.getLogoUrl() != null)       config.setLogoUrl(request.getLogoUrl());
+    if (request.getFavicomUrl() != null)    config.setFavicomUrl(request.getFavicomUrl());
+    if (request.getPrimaryColor() != null)  config.setPrimarColor(request.getPrimaryColor());
+    if (request.getSecondaryColor() != null) config.setSecondaryColor(request.getSecondaryColor());
     if (request.getPrincipalFont() != null) {
         centraliceValidation(request.getPrincipalFont());
         config.setPrincipalfont(request.getPrincipalFont());
     }
 
     config.setUpdateAt(Date.valueOf(LocalDate.now()));
-
     Configuration saved = configRepo.save(config);
-
-    ConfigResponse response = new ConfigResponse();
-    response.setId(saved.getIdConfig());
-    response.setCommerceName(saved.getCommerceName());
-    response.setLogoUrl(saved.getLogoUrl());
-    response.setFavicomUrl(saved.getFavicomUrl());
-    response.setPrimaryColor(saved.getPrimarColor());
-    response.setSecondaryColor(saved.getSecondaryColor());
-    response.setPrincipalFont(saved.getPrincipalfont());
-    response.setUpdateDate(saved.getUpdateAt());
-
-    return response;
+    return toResponse(saved);
 }
 
 //obtener por id

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,6 @@ import com.freemarket.locations_service.repository.RegionRepository;
 import com.freemarket.locations_service.request.LocationRequest;
 import com.freemarket.locations_service.response.LocationResponse;
 
-
 @ExtendWith(MockitoExtension.class)
 public class LocationsServiceTest {
 
@@ -37,6 +37,8 @@ public class LocationsServiceTest {
 
     @InjectMocks
     private LocationsService locationsService;
+
+    // ─── builders ─────────────────────────────────────────────────────────────
 
     private LocationRequest buildRequest() {
         LocationRequest req = new LocationRequest();
@@ -58,6 +60,19 @@ public class LocationsServiceTest {
         return dto;
     }
 
+    private Region buildRegion() {
+        Region region = new Region();
+        region.setNombreRegion("Metropolitana");
+        return region;
+    }
+
+    private Comuna buildComuna(Region region) {
+        Comuna comuna = new Comuna();
+        comuna.setNombreComuna("Colina");
+        comuna.setRegion(region);
+        return comuna;
+    }
+
     private Location buildSavedLocation(Comuna comuna) {
         Location loc = new Location();
         loc.setLocationId(1L);
@@ -71,20 +86,7 @@ public class LocationsServiceTest {
         return loc;
     }
 
-    private Comuna buildComuna(Region region) {
-        Comuna comuna = new Comuna();
-        comuna.setNombreComuna("Colina");
-        comuna.setRegion(region);
-        return comuna;
-    }
-
-    private Region buildRegion() {
-        Region region = new Region();
-        region.setNombreRegion("Metropolitana");
-        return region;
-    }
-
-    // ── createUserLocation ────────────────────────────────────────────────────
+    // ─── createUserLocation ───────────────────────────────────────────────────
 
     @Test
     void createUserLocation_success_returnsLocationResponse() {
@@ -92,7 +94,6 @@ public class LocationsServiceTest {
         Comuna comuna = buildComuna(region);
         Location saved = buildSavedLocation(comuna);
 
-        when(authClientService.getUserById(1L)).thenReturn(true);
         when(mapService.geocode(anyString(), anyString(), anyString(), anyString())).thenReturn(buildMapsDTO());
         when(regionRepo.findByNombreRegion("Metropolitana")).thenReturn(Optional.of(region));
         when(comunaRepo.findByNombreComuna("Colina")).thenReturn(Optional.of(comuna));
@@ -104,22 +105,18 @@ public class LocationsServiceTest {
         assertThat(response.getStreet()).isEqualTo("Apolo 11");
         assertThat(response.getStreetNumber()).isEqualTo("3009");
         assertThat(response.getStreetAddress()).isEqualTo("3009 Apolo 11, Colina, Metropolitana");
+        assertThat(response.getComunaNombre()).isEqualTo("Colina");
+        assertThat(response.getRegionNombre()).isEqualTo("Metropolitana");
     }
 
     @Test
-    void createUserLocation_userNotFound_throwsIllegalArgument() {
-        when(authClientService.getUserById(1L)).thenReturn(false);
+    void createUserLocation_streetNull_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setStreet(null);
 
-        assertThatThrownBy(() -> locationsService.createUserLocation(buildRequest()))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void createUserLocation_serviceUnavailable_throwsServiceUnavailable() {
-        when(authClientService.getUserById(1L)).thenReturn(null);
-
-        assertThatThrownBy(() -> locationsService.createUserLocation(buildRequest()))
-                .isInstanceOf(ServiceUnavailableException.class);
+        assertThatThrownBy(() -> locationsService.createUserLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("calle");
     }
 
     @Test
@@ -128,7 +125,8 @@ public class LocationsServiceTest {
         request.setStreet("");
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("calle");
     }
 
     @Test
@@ -137,12 +135,32 @@ public class LocationsServiceTest {
         request.setStreetNumber("");
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("número");
     }
 
     @Test
-    void createUserLocation_addressNotFound_throwsIllegalArgument() { // ← nuevo
-        when(authClientService.getUserById(1L)).thenReturn(true);
+    void createUserLocation_comunaEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setComuna("");
+
+        assertThatThrownBy(() -> locationsService.createUserLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("comuna");
+    }
+
+    @Test
+    void createUserLocation_regionEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setRegion("");
+
+        assertThatThrownBy(() -> locationsService.createUserLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("región");
+    }
+
+    @Test
+    void createUserLocation_addressNotFound_throwsIllegalArgument() {
         when(mapService.geocode(anyString(), anyString(), anyString(), anyString()))
                 .thenThrow(new IllegalArgumentException("Dirección no encontrada: 3009 Apolo 11"));
 
@@ -152,8 +170,7 @@ public class LocationsServiceTest {
     }
 
     @Test
-    void createUserLocation_mapsServiceUnavailable_throwsServiceUnavailable() { // ← nuevo
-        when(authClientService.getUserById(1L)).thenReturn(true);
+    void createUserLocation_mapsServiceUnavailable_throwsServiceUnavailable() {
         when(mapService.geocode(anyString(), anyString(), anyString(), anyString()))
                 .thenThrow(new ServiceUnavailableException("Servicio de mapas no disponible"));
 
@@ -162,7 +179,24 @@ public class LocationsServiceTest {
                 .hasMessageContaining("Servicio de mapas no disponible");
     }
 
-    // ── updateLocation ────────────────────────────────────────────────────────
+    @Test
+    void createUserLocation_regionCreatedWhenNotFound() {
+        Region region = buildRegion();
+        Comuna comuna = buildComuna(region);
+        Location saved = buildSavedLocation(comuna);
+
+        when(mapService.geocode(anyString(), anyString(), anyString(), anyString())).thenReturn(buildMapsDTO());
+        when(regionRepo.findByNombreRegion("Metropolitana")).thenReturn(Optional.empty());
+        when(regionRepo.save(any(Region.class))).thenReturn(region);
+        when(comunaRepo.findByNombreComuna("Colina")).thenReturn(Optional.of(comuna));
+        when(locationRepo.save(any(Location.class))).thenReturn(saved);
+
+        LocationResponse response = locationsService.createUserLocation(buildRequest());
+
+        assertThat(response.getRegionNombre()).isEqualTo("Metropolitana");
+    }
+
+    // ─── updateLocation ───────────────────────────────────────────────────────
 
     @Test
     void updateLocation_success_returnsUpdatedLocationResponse() {
@@ -170,7 +204,7 @@ public class LocationsServiceTest {
         Comuna comuna = buildComuna(region);
         Location existing = buildSavedLocation(comuna);
         Location saved = buildSavedLocation(comuna);
-        saved.setStreetAddress("456 Nueva Calle, Colina");
+        saved.setStreetAddress("3009 Apolo 11, Colina, Metropolitana");
 
         when(locationRepo.findByUserId(1L)).thenReturn(Optional.of(existing));
         when(mapService.geocode(anyString(), anyString(), anyString(), anyString())).thenReturn(buildMapsDTO());
@@ -181,18 +215,61 @@ public class LocationsServiceTest {
         LocationResponse response = locationsService.updateLocation(buildRequest());
 
         assertThat(response.getUserId()).isEqualTo(1L);
+        assertThat(response.getStreet()).isEqualTo("Apolo 11");
+    }
+
+    @Test
+    void updateLocation_streetEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setStreet("");
+
+        assertThatThrownBy(() -> locationsService.updateLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("calle");
+    }
+
+    @Test
+    void updateLocation_streetNumberEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setStreetNumber("");
+
+        assertThatThrownBy(() -> locationsService.updateLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("número");
+    }
+
+    @Test
+    void updateLocation_comunaEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setComuna("");
+
+        assertThatThrownBy(() -> locationsService.updateLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("comuna");
+    }
+
+    @Test
+    void updateLocation_regionEmpty_throwsIllegalArgument() {
+        LocationRequest request = buildRequest();
+        request.setRegion("");
+
+        assertThatThrownBy(() -> locationsService.updateLocation(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("región");
     }
 
     @Test
     void updateLocation_locationNotFound_throwsIllegalArgument() {
+        // Validaciones pasan, pero no existe la location en BD
         when(locationRepo.findByUserId(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> locationsService.updateLocation(buildRequest()))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Locacion not Found");
     }
 
     @Test
-    void updateLocation_addressNotFound_throwsIllegalArgument() { // ← nuevo
+    void updateLocation_addressNotFound_throwsIllegalArgument() {
         Region region = buildRegion();
         Comuna comuna = buildComuna(region);
         Location existing = buildSavedLocation(comuna);
@@ -207,7 +284,7 @@ public class LocationsServiceTest {
     }
 
     @Test
-    void updateLocation_mapsServiceUnavailable_throwsServiceUnavailable() { // ← nuevo
+    void updateLocation_mapsServiceUnavailable_throwsServiceUnavailable() {
         Region region = buildRegion();
         Comuna comuna = buildComuna(region);
         Location existing = buildSavedLocation(comuna);
@@ -220,40 +297,4 @@ public class LocationsServiceTest {
                 .isInstanceOf(ServiceUnavailableException.class)
                 .hasMessageContaining("Servicio de mapas no disponible");
     }
-
-    @Test
-void updateLocation_streetEmpty_throwsIllegalArgument() {
-    LocationRequest request = buildRequest();
-    request.setStreet("");
-
-    assertThatThrownBy(() -> locationsService.updateLocation(request))
-            .isInstanceOf(IllegalArgumentException.class);
-}
-
-@Test
-void updateLocation_streetNumberEmpty_throwsIllegalArgument() {
-    LocationRequest request = buildRequest();
-    request.setStreetNumber("");
-
-    assertThatThrownBy(() -> locationsService.updateLocation(request))
-            .isInstanceOf(IllegalArgumentException.class);
-}
-
-@Test
-void updateLocation_comunaEmpty_throwsIllegalArgument() {
-    LocationRequest request = buildRequest();
-    request.setComuna("");
-
-    assertThatThrownBy(() -> locationsService.updateLocation(request))
-            .isInstanceOf(IllegalArgumentException.class);
-}
-
-@Test
-void updateLocation_regionEmpty_throwsIllegalArgument() {
-    LocationRequest request = buildRequest();
-    request.setRegion("");
-
-    assertThatThrownBy(() -> locationsService.updateLocation(request))
-            .isInstanceOf(IllegalArgumentException.class);
-}
 }

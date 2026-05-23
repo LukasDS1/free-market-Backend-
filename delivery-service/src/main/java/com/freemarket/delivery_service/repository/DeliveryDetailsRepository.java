@@ -1,5 +1,6 @@
 package com.freemarket.delivery_service.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,7 @@ public interface DeliveryDetailsRepository  extends JpaRepository<DeliveryDetail
 
     Optional<DeliveryDetails> findByIdReserva(Long idReserva);
     boolean existsByIdReserva(Long idReserva);
+    List<DeliveryDetails> findByIdRepartidor(Long idRepartidor);
     
 
 }

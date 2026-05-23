@@ -51,6 +51,9 @@ public class LoadDataBase {
                 Privileges ReadDelivery = new Privileges(null, "READ_DELIVERY", ModuloDelivery);
                 privilegesRepository.save(ReadDelivery);
 
+                Privileges PathDelivery = new Privileges(null, "PATCH_DELIVERY", ModuloDelivery);
+                privilegesRepository.save(PathDelivery);
+
                 Privileges ReadLocation = new Privileges(null, "READ_LOCATION", ModuloLocation); // necesitas crear ModuloLocation arriba
                 privilegesRepository.save(ReadLocation);
 
@@ -165,6 +168,10 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadSystemConfig));
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, DeleteUser));
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, UpdateDelivery));
+
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, PathDelivery));
+
+                rolePrivilegesList.add(new rolPrivileges(null, 3L, PathDelivery));
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadDelivery));
                 rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadDelivery));
