@@ -72,7 +72,7 @@ public class LoadDataBase {
             reserve.setReserveDate(Date.valueOf(LocalDate.now()));
             reserve.setTotalPrice(44980);          // 29990 + 14990
             reserve.setIdempotencyKey("seed-reserve-user2-001");
-            reserve.setStatus(ReserveStatus.PENDIENTE);
+            reserve.setStatus(ReserveStatus.RESERVADO);
 
             reserveRepo.save(reserve);
 
