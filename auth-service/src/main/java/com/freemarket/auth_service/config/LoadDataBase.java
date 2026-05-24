@@ -31,7 +31,7 @@ public class LoadDataBase {
                 Rol Usuario = new Rol(null, "USER", "USER ROL",new ArrayList<>());
                 rolRepository.save(Usuario);
 
-                Rol repartidor = new Rol(null, "REPARTIDOR", "REPARTIDOR ROL",new ArrayList<>());
+                Rol repartidor = new Rol(null, "DELIVERY", "DELIVERY ROL",new ArrayList<>());
                 rolRepository.save(repartidor);
 
                 User ADM = new User(null,"admin@freemarket.com",passwordEncoder.encode("admin"),"admin",
