@@ -178,8 +178,8 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadDelivery));
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadProduct));
 
-
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, ReadLocation));
                 rolePrivilegesList.add(new rolPrivileges(null, 3L, ReadLocation));
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateLocation));
