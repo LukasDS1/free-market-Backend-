@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -142,15 +143,15 @@ public class AuthServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
  
-    @Test
+   @Test
     void registerUser_emailEmpty_throwsException() {
-        RegisterRequest request = buildRegisterRequest();
-        request.setEmail("");
-        when(userRepository.existsByEmail("")).thenReturn(false);
- 
-        assertThatThrownBy(() -> authService.registerUser(request))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
+    RegisterRequest request = buildRegisterRequest();
+    request.setEmail("");
+
+    assertThatThrownBy(() -> authService.registerUser(request))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Email is required");
+}
  
     @Test
     void registerUser_usernameAlreadyExists_throwsException() {

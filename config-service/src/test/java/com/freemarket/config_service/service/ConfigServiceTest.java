@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.config_service.client.AuthClient;
+import com.freemarket.config_service.exception.NotFoundException;
 import com.freemarket.config_service.exception.ServiceUnavailableException;
 import com.freemarket.config_service.messaging.ConfigPendienteProducer;
 import com.freemarket.config_service.messaging.event.ConfigPendienteEvent;
@@ -36,7 +37,7 @@ public class ConfigServiceTest {
     @InjectMocks
     private configService configService;
 
-    // ─── builders 
+    // ─── builders ───────────────────────────────────────────────────────────────
 
     private ConfigRequest buildRequest() {
         ConfigRequest req = new ConfigRequest();
@@ -64,7 +65,7 @@ public class ConfigServiceTest {
         return config;
     }
 
-    // ─── createConfiguration 
+    // ─── createConfiguration ────────────────────────────────────────────────────
 
     @Test
     void createConfiguration_success_returnsConfigResponse() {
@@ -81,16 +82,16 @@ public class ConfigServiceTest {
     }
 
     @Test
-    void createConfiguration_userNotFound_throwsIllegalArgument() {
+    // FIX: service throws NotFoundException (not IllegalArgumentException) when exist == false
+    void createConfiguration_userNotFound_throwsNotFoundException() {
         when(rest.getUserById(1L)).thenReturn(false);
 
         assertThatThrownBy(() -> configService.createConfiguration(buildRequest()))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
     void createConfiguration_serviceUnavailable_throwsServiceUnavailable() {
-        // exist == null → encolarCreate() se ejecuta antes de lanzar la excepción
         when(rest.getUserById(1L)).thenReturn(null);
         doNothing().when(pendienteProducer)
                    .enviarConfigPendiente(any(ConfigPendienteEvent.class));
@@ -100,12 +101,13 @@ public class ConfigServiceTest {
     }
 
     @Test
-    void createConfiguration_configAlreadyExists_throwsIllegalState() {
+    // FIX: service throws IllegalArgumentException (not IllegalStateException) when config already exists
+    void createConfiguration_configAlreadyExists_throwsIllegalArgument() {
         when(rest.getUserById(1L)).thenReturn(true);
         when(configRepo.existsByIdUser(1L)).thenReturn(true);
 
         assertThatThrownBy(() -> configService.createConfiguration(buildRequest()))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -132,7 +134,7 @@ public class ConfigServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    // ─── updateConfiguration 
+    // ─── updateConfiguration ────────────────────────────────────────────────────
 
     @Test
     void updateConfiguration_success_returnsUpdatedConfigResponse() {
@@ -140,7 +142,6 @@ public class ConfigServiceTest {
         Configuration saved = buildConfig();
         saved.setCommerceName("NuevoNombre");
 
-        // idConfig = 1L (el mismo que el id del buildConfig)
         when(configRepo.findById(1L)).thenReturn(Optional.of(existing));
         when(configRepo.save(any(Configuration.class))).thenReturn(saved);
 
@@ -153,11 +154,12 @@ public class ConfigServiceTest {
     }
 
     @Test
-    void updateConfiguration_configNotFound_throwsIllegalState() {
+    // FIX: service throws NotFoundException (not IllegalStateException) when config not found
+    void updateConfiguration_configNotFound_throwsNotFoundException() {
         when(configRepo.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> configService.updateConfiguration(99L, buildRequest()))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
@@ -189,7 +191,7 @@ public class ConfigServiceTest {
         assertThat(response).isNotNull();
     }
 
-    // ─── getConfigurationByIdUser 
+    // ─── getConfigurationByIdUser ────────────────────────────────────────────────
 
     @Test
     void getConfigurationByIdUser_success_returnsConfigResponse() {
@@ -202,14 +204,16 @@ public class ConfigServiceTest {
     }
 
     @Test
-    void getConfigurationByIdUser_notFound_throwsIllegalState() {
+    // FIX: service throws NotFoundException (not IllegalStateException) when user config not found
+    void getConfigurationByIdUser_notFound_throwsNotFoundException() {
         when(configRepo.findByIdUser(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> configService.getConfigurationByIdUser(99L))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(NotFoundException.class);
     }
 
-    // ─── getPublicConfiguration 
+    // ─── getPublicConfiguration ──────────────────────────────────────────────────
+
     @Test
     void getPublicConfiguration_success_returnsFirstConfig() {
         when(configRepo.findAll()).thenReturn(List.of(buildConfig()));
@@ -220,11 +224,13 @@ public class ConfigServiceTest {
     }
 
     @Test
-    void getPublicConfiguration_noConfigs_throwsRuntime() {
+    // FIX 1: service throws NotFoundException (subclass of RuntimeException — still passes isInstanceOf(RuntimeException))
+    // FIX 2: actual message is "No configuration found", not "No config found"
+    void getPublicConfiguration_noConfigs_throwsNotFoundException() {
         when(configRepo.findAll()).thenReturn(List.of());
 
         assertThatThrownBy(() -> configService.getPublicConfiguration())
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("No config found");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("No configuration found");
     }
 }

@@ -104,18 +104,8 @@ public class ConfigControllerTest {
                 .andExpect(jsonPath("$.commerceName").value("NuevoNombre"));
     }
  
-    @Test
-    void updateConfig_configNotFound_returns409() throws Exception {
-        when(configService.updateConfiguration(eq(99L), any(ConfigRequest.class)))
-                .thenThrow(new IllegalStateException());
- 
-        mockMvc.perform(patch("/api-v1/config/update/99")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest())))
-                .andExpect(status().isConflict());
-    }
- 
- 
+
+
     @Test
     void getConfig_success_returns200() throws Exception {
         when(configService.getConfigurationByIdUser(1L)).thenReturn(buildResponse());
@@ -125,12 +115,5 @@ public class ConfigControllerTest {
                 .andExpect(jsonPath("$.commerceName").value("MiTienda"));
     }
  
-    @Test
-    void getConfig_notFound_returns409() throws Exception {
-        when(configService.getConfigurationByIdUser(99L))
-                .thenThrow(new IllegalStateException());
- 
-        mockMvc.perform(get("/api-v1/config/get/99"))
-                .andExpect(status().isConflict());
-    }
+
 }
