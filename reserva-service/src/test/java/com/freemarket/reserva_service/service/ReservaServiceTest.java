@@ -3,6 +3,7 @@ package com.freemarket.reserva_service.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.reserva_service.client.AuthClient;
-import com.freemarket.reserva_service.exception.ServiceUnavailableException;
+import com.freemarket.reserva_service.exception.NotFoundException;
 import com.freemarket.reserva_service.messaging.ReservaEventPublisher;
 import com.freemarket.reserva_service.messaging.ReservaPendienteProducer;
 import com.freemarket.reserva_service.model.Product;
@@ -30,11 +31,11 @@ import com.freemarket.reserva_service.request.CancelReserveRequest;
 import com.freemarket.reserva_service.request.ProductItemRequest;
 import com.freemarket.reserva_service.request.ReserveRequest;
 import com.freemarket.reserva_service.response.ReservaResponse;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 public class ReservaServiceTest {
-     @Mock
+
+    @Mock
     private AuthClient authClient;
 
     @Mock
@@ -50,18 +51,17 @@ public class ReservaServiceTest {
     private ReservaEventPublisher eventPublisher;
 
     @Mock
-    private ReservaPendienteProducer pendienteProducer; 
+    private ReservaPendienteProducer pendienteProducer;
 
     @InjectMocks
     private ReservaService reservaService;
 
-
+    // ── builders ──────────────────────────────────────────────────────────────
 
     private ReserveRequest buildReserveRequest() {
         ProductItemRequest item = new ProductItemRequest();
         item.setIdProduct(1L);
         item.setQuantity(2);
-
         ReserveRequest req = new ReserveRequest();
         req.setIdUser(1L);
         req.setProducts(List.of(item));
@@ -71,7 +71,6 @@ public class ReservaServiceTest {
     private Product buildProduct() {
         Provider provider = new Provider();
         provider.setProvidername("TECHCORP");
-
         Product p = new Product();
         p.setIdProduct(1L);
         p.setProductname("Laptop");
@@ -93,7 +92,6 @@ public class ReservaServiceTest {
         ReserveDetails detail = new ReserveDetails();
         detail.setQuanty(2);
         detail.setProduct(product);
-
         Reserve r = buildSavedReserve();
         r.setReserveDetails(List.of(detail));
         return r;
@@ -105,85 +103,89 @@ public class ReservaServiceTest {
         req.setIdUser(1L);
         return req;
     }
+
+    // ── createReserva ─────────────────────────────────────────────────────────
+
     @Test
-void createReserva_success_returnsReservaResponse() {
-    Reserve saved = buildSavedReserve();
-    Product product = buildProduct();
+    void createReserva_success_returnsReservaResponse() {
+        Reserve saved = buildSavedReserve();
+        Product product = buildProduct();
 
-    when(authClient.getUserById(1L)).thenReturn(true);
-    when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty()); 
-    when(reserveRepository.save(any(Reserve.class))).thenReturn(saved);
-    when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-    when(productRepository.save(any(Product.class))).thenReturn(product);
-    when(reserveDetailsRepository.save(any(ReserveDetails.class))).thenReturn(new ReserveDetails());
+        when(authClient.getUserById(1L)).thenReturn(true);
+        when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
+        when(reserveRepository.save(any(Reserve.class))).thenReturn(saved);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(reserveDetailsRepository.save(any(ReserveDetails.class))).thenReturn(new ReserveDetails());
 
-    ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123"); 
+        ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123");
 
-    assertThat(response.getIdReserva()).isEqualTo(1L);
-    verify(eventPublisher).publishReservaCreated(1L,1L);
-}
+        assertThat(response.getIdReserva()).isEqualTo(1L);
+        verify(eventPublisher).publishReservaCreated(1L, 1L);
+    }
 
-@Test
-void createReserva_userNotFound_throwsIllegalArgument() {
-    when(authClient.getUserById(1L)).thenReturn(false);
-    assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("User not Found");
-}
+    @Test
+    void createReserva_userNotFound_throwsNotFoundException() {
+        when(authClient.getUserById(1L)).thenReturn(false);
+        when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
 
-@Test
-void createReserva_serviceUnavailable_createsPendiente() {
-    Reserve saved = buildSavedReserve();
-    Product product = buildProduct();
+        assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("User not found");
+    }
 
-    when(authClient.getUserById(1L)).thenReturn(null);
-    when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
-    when(reserveRepository.save(any(Reserve.class))).thenReturn(saved);
-    when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-    when(reserveDetailsRepository.save(any(ReserveDetails.class))).thenReturn(new ReserveDetails());
+    @Test
+    void createReserva_serviceUnavailable_createsPendiente() {
+        Reserve saved = buildSavedReserve();
+        Product product = buildProduct();
 
-    ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123");
+        when(authClient.getUserById(1L)).thenReturn(null);
+        when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
+        when(reserveRepository.save(any(Reserve.class))).thenReturn(saved);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(reserveDetailsRepository.save(any(ReserveDetails.class))).thenReturn(new ReserveDetails());
 
-    assertThat(response.getStatus()).isEqualTo("PENDIENTE");
-}
+        ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123");
 
-@Test
-void createReserva_productNotFound_throwsIllegalArgument() {
-    when(authClient.getUserById(1L)).thenReturn(true);
-    when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
-    when(reserveRepository.save(any(Reserve.class))).thenReturn(buildSavedReserve());
-    when(productRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThat(response.getStatus()).isEqualTo("PENDIENTE");
+    }
 
-    assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Producto no encontrado");
-}
+    @Test
+    void createReserva_productNotFound_throwsNotFoundException() {
+        when(authClient.getUserById(1L)).thenReturn(true);
+        when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
+        when(reserveRepository.save(any(Reserve.class))).thenReturn(buildSavedReserve());
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
-@Test
-void createReserva_insufficientStock_throwsIllegalArgument() {
-    Product product = buildProduct();
-    product.setProductStock(1);
+        assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Product not found");
+    }
 
-    when(authClient.getUserById(1L)).thenReturn(true);
-    when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
-    when(reserveRepository.save(any(Reserve.class))).thenReturn(buildSavedReserve());
-    when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+    @Test
+    void createReserva_insufficientStock_throwsIllegalArgument() {
+        Product product = buildProduct();
+        product.setProductStock(1);
 
-    assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("No hay suficiente stock");
-}
+        when(authClient.getUserById(1L)).thenReturn(true);
+        when(reserveRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
+        when(reserveRepository.save(any(Reserve.class))).thenReturn(buildSavedReserve());
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
-@Test
-void createReserva_duplicateKey_returnsSameReserva() {
-    Reserve existing = buildSavedReserve();
+        assertThatThrownBy(() -> reservaService.createReserva(buildReserveRequest(), "test-key-123"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Insufficient stock available");
+    }
 
-    when(reserveRepository.findByIdempotencyKey("test-key-123")).thenReturn(Optional.of(existing));
+    @Test
+    void createReserva_duplicateKey_returnsSameReserva() {
+        Reserve existing = buildSavedReserve();
 
-    ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123");
+        when(reserveRepository.findByIdempotencyKey("test-key-123")).thenReturn(Optional.of(existing));
 
-    assertThat(response.getIdReserva()).isEqualTo(1L);
-    verify(reserveRepository, never()).save(any()); 
-}
+        ReservaResponse response = reservaService.createReserva(buildReserveRequest(), "test-key-123");
 
+        assertThat(response.getIdReserva()).isEqualTo(1L);
+        verify(reserveRepository, never()).save(any());
+    }
 }

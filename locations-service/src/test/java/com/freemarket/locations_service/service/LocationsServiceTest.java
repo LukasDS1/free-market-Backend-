@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.locations_service.DTO.MapsDTO;
 import com.freemarket.locations_service.client.AuthClient;
+import com.freemarket.locations_service.excepcion.NotFoundException;
 import com.freemarket.locations_service.excepcion.ServiceUnavailableException;
 import com.freemarket.locations_service.model.Comuna;
 import com.freemarket.locations_service.model.Location;
@@ -116,7 +117,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("calle");
+                .hasMessageContaining("Street cannot be empty");
     }
 
     @Test
@@ -126,7 +127,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("calle");
+                .hasMessageContaining("Street cannot be empty");
     }
 
     @Test
@@ -136,7 +137,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("número");
+                .hasMessageContaining("Street number cannot be empty");
     }
 
     @Test
@@ -146,7 +147,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("comuna");
+                .hasMessageContaining("Comuna cannot be empty");
     }
 
     @Test
@@ -156,7 +157,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.createUserLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("región");
+                .hasMessageContaining("Region cannot be empty");
     }
 
     @Test
@@ -225,7 +226,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.updateLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("calle");
+                .hasMessageContaining("Street cannot be empty");
     }
 
     @Test
@@ -235,7 +236,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.updateLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("número");
+                .hasMessageContaining("Street number cannot be empty");
     }
 
     @Test
@@ -245,7 +246,7 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.updateLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("comuna");
+                .hasMessageContaining("Comuna cannot be empty");
     }
 
     @Test
@@ -255,17 +256,16 @@ public class LocationsServiceTest {
 
         assertThatThrownBy(() -> locationsService.updateLocation(request))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("región");
+                .hasMessageContaining("Region cannot be empty");
     }
 
     @Test
-    void updateLocation_locationNotFound_throwsIllegalArgument() {
-        // Validaciones pasan, pero no existe la location en BD
+    void updateLocation_locationNotFound_throwsNotFoundException() {
         when(locationRepo.findByUserId(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> locationsService.updateLocation(buildRequest()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Locacion not Found");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Location not found");
     }
 
     @Test

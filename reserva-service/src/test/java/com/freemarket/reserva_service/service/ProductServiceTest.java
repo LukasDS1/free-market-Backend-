@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.freemarket.reserva_service.exception.NotFoundException;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Provider;
 import com.freemarket.reserva_service.repository.ProductRepository;
@@ -24,7 +25,7 @@ import com.freemarket.reserva_service.response.ProductoResponse;
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
 
-     @Mock
+    @Mock
     private ProductRepository productRepository;
 
     @Mock
@@ -32,8 +33,6 @@ public class ProductServiceTest {
 
     @InjectMocks
     private ProductService productService;
-
-
 
     private ProductoRequest buildRequest() {
         ProductoRequest req = new ProductoRequest();
@@ -61,7 +60,7 @@ public class ProductServiceTest {
         return p;
     }
 
-
+    // ── createProduct ─────────────────────────────────────────────────────────
 
     @Test
     void createProduct_success_returnsProductoResponse() {
@@ -101,7 +100,7 @@ public class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.createProduct(req))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("nombre");
+                .hasMessageContaining("Product name cannot be empty");
     }
 
     @Test
@@ -111,17 +110,17 @@ public class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.createProduct(req))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("prooveedor");
+                .hasMessageContaining("Provider name cannot be empty");
     }
 
     @Test
-    void createProduct_zeroPice_throwsIllegalArgument() {
+    void createProduct_zeroPrice_throwsIllegalArgument() {
         ProductoRequest req = buildRequest();
         req.setPrice(0);
 
         assertThatThrownBy(() -> productService.createProduct(req))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("precio");
+                .hasMessageContaining("Price must be greater than zero");
     }
 
     @Test
@@ -131,9 +130,8 @@ public class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.createProduct(req))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("stock");
+                .hasMessageContaining("Stock cannot be negative");
     }
-
 
     // ── updateProduct ─────────────────────────────────────────────────────────
 
@@ -156,33 +154,34 @@ public class ProductServiceTest {
     }
 
     @Test
-    void updateProduct_productNotFound_throwsIllegalArgument() {
+    void updateProduct_productNotFound_throwsNotFoundException() {
         when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productService.updateProduct(99L, buildRequest()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Producto no encontrado");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Product not found");
     }
-
 
     // ── deleteProductById ─────────────────────────────────────────────────────
 
     @Test
-    void deleteProductById_success_deletesProduct() {
-        when(productRepository.existsById(1L)).thenReturn(true);
+    void deleteProductById_success_deactivatesProduct() {
+        Provider provider = buildProvider();
+        Product existing = buildSavedProduct(provider);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
 
         productService.deleteProductById(1L);
 
-        verify(productRepository).deleteById(1L);
+        verify(productRepository).save(any(Product.class));
     }
 
     @Test
-    void deleteProductById_productNotFound_throwsIllegalArgument() {
-        when(productRepository.existsById(99L)).thenReturn(false);
+    void deleteProductById_productNotFound_throwsNotFoundException() {
+        when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productService.deleteProductById(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Producto no encontrado");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Product not found");
     }
-
 }

@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.delivery_service.enums.DeliveryStatus;
+import com.freemarket.delivery_service.exception.NotFoundException;
 import com.freemarket.delivery_service.model.Delivery;
 import com.freemarket.delivery_service.model.DeliveryDetails;
 import com.freemarket.delivery_service.repository.DeliveryRepository;
@@ -57,14 +58,14 @@ public class DeliveryServiceTest {
     }
 
     @Test
-    void getReserva_notFound_throwsIllegalArgument() {
-        when(deliveryRepository.findByDeliveryDetails_IdReserva(99L))
-                .thenReturn(Optional.empty());
+void getReserva_notFound_throwsNotFoundException() {
+    when(deliveryRepository.findByDeliveryDetails_IdReserva(99L))
+            .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> deliveryService.getReserva(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Delivery no encontrado");
-    }
+    assertThatThrownBy(() -> deliveryService.getReserva(99L))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessageContaining("Delivery not found");
+}
 
 
     // ── updateStatus ──────────────────────────────────────────────────────────
@@ -84,12 +85,12 @@ public class DeliveryServiceTest {
     }
 
     @Test
-    void updateStatus_deliveryNotFound_throwsIllegalArgument() {
-        when(deliveryRepository.findByDeliveryDetails_IdReserva(99L))
-                .thenReturn(Optional.empty());
+void updateStatus_deliveryNotFound_throwsNotFoundException() {
+    when(deliveryRepository.findByDeliveryDetails_IdReserva(99L))
+            .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> deliveryService.updateStatus(99L, DeliveryStatus.EN_CAMINO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Delivery no encontrado");
-    }
+    assertThatThrownBy(() -> deliveryService.updateStatus(99L, DeliveryStatus.EN_CAMINO))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessageContaining("Delivery not found");
+}
 }

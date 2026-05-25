@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.freemarket.privileges_service.client.Client;
+import com.freemarket.privileges_service.exception.NotFoundException;
 import com.freemarket.privileges_service.exception.ServiceUnavailableException;
 import com.freemarket.privileges_service.model.Modulo;
 import com.freemarket.privileges_service.model.Privileges;
@@ -106,12 +107,13 @@ public class ServicesTest {
     }
 
     @Test
-    void getPrivilegesByRole_roleNotFound_throwsIllegalArgument() {
-        when(rest.getRoleById(1L)).thenReturn(false);
+void getPrivilegesByRole_roleNotFound_throwsNotFoundException() {
+    when(rest.getRoleById(1L)).thenReturn(false);
 
-        assertThatThrownBy(() -> services.getPrivilegesByRole(1L))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
+    assertThatThrownBy(() -> services.getPrivilegesByRole(1L))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessageContaining("Role not found");
+}
 
     @Test
     void getPrivilegesByRole_serviceUnavailable_throwsServiceUnavailable() {
