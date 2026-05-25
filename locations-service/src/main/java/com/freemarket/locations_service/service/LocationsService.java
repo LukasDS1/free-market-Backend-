@@ -1,9 +1,10 @@
 package com.freemarket.locations_service.service;
 
 import org.springframework.stereotype.Service;
+
 import com.freemarket.locations_service.DTO.MapsDTO;
 import com.freemarket.locations_service.client.AuthClient;
-import com.freemarket.locations_service.excepcion.ServiceUnavailableException;
+import com.freemarket.locations_service.excepcion.NotFoundException;
 import com.freemarket.locations_service.model.Comuna;
 import com.freemarket.locations_service.model.Location;
 import com.freemarket.locations_service.model.Region;
@@ -27,134 +28,154 @@ public class LocationsService {
     private final AuthClient authClientService;
 
     public LocationResponseForId getLocationByUserId(Long id) {
-        Location location = locationRepo.findByUserIdWithComunaAndRegion(id).orElseThrow(
-            () -> new IllegalArgumentException("Usuario no encontrado"));
+
+        Location location = locationRepo.findByUserIdWithComunaAndRegion(id)
+                .orElseThrow(() -> new NotFoundException("User location not found"));
 
         LocationResponseForId response = new LocationResponseForId();
         response.setStreetAddress(location.getStreetAddress());
         response.setComunaNombre(location.getComuna().getNombreComuna());
         response.setRegionNombre(location.getComuna().getRegion().getNombreRegion());
+
         return response;
     }
+
     public LocationResponse createUserLocation(LocationRequest request) {
-    validationStreet(request.getStreet());
-    validationStreetNumber(request.getStreetNumber());
-    validationComuna(request.getComuna());
-    validationRegion(request.getRegion());
-    
-    MapsDTO map = mapService.geocode(
-        request.getStreet(),
-        request.getStreetNumber(),
-        request.getComuna(),
-        request.getRegion()
-    );
 
-    Region region = regionRepo.findByNombreRegion(request.getRegion())
-        .orElseGet(() -> {
-            Region newRegion = new Region();
-            newRegion.setNombreRegion(request.getRegion());
-            return regionRepo.save(newRegion);
-        });
+        validationStreet(request.getStreet());
+        validationStreetNumber(request.getStreetNumber());
+        validationComuna(request.getComuna());
+        validationRegion(request.getRegion());
 
-    Comuna comuna = comunaRepo.findByNombreComuna(request.getComuna())
-        .orElseGet(() -> {
-            Comuna newComuna = new Comuna();
-            newComuna.setNombreComuna(request.getComuna());
-            newComuna.setRegion(region);
-            return comunaRepo.save(newComuna);
-        });
+        MapsDTO map = mapService.geocode(
+                request.getStreet(),
+                request.getStreetNumber(),
+                request.getComuna(),
+                request.getRegion()
+        );
 
-    Location location = new Location();
-    location.setUserId(request.getUserId());
-    location.setStreet(request.getStreet());
-    location.setStreetNumber(request.getStreetNumber());
-    location.setStreetAddress(map.getFormattedAddress());
-    location.setLatitude(map.getLatitude());
-    location.setLongitud(map.getLongitude());
-    location.setComuna(comuna);
+        Region region = regionRepo.findByNombreRegion(request.getRegion())
+                .orElseGet(() -> {
+                    Region newRegion = new Region();
+                    newRegion.setNombreRegion(request.getRegion());
+                    return regionRepo.save(newRegion);
+                });
 
-    Location saved = locationRepo.save(location);
+        Comuna comuna = comunaRepo.findByNombreComuna(request.getComuna())
+                .orElseGet(() -> {
+                    Comuna newComuna = new Comuna();
+                    newComuna.setNombreComuna(request.getComuna());
+                    newComuna.setRegion(region);
+                    return comunaRepo.save(newComuna);
+                });
 
-    LocationResponse response = new LocationResponse();
-    response.setLocationId(saved.getLocationId());
-    response.setUserId(saved.getUserId());
-    response.setStreet(saved.getStreet());
-    response.setStreetNumber(saved.getStreetNumber());
-    response.setStreetAddress(saved.getStreetAddress());
-    response.setLatitude(saved.getLatitude());
-    response.setLongitude(saved.getLongitud());
-    response.setComunaNombre(comuna.getNombreComuna());
-    response.setRegionNombre(region.getNombreRegion());
-    return response;
-}
-public LocationResponse updateLocation(LocationRequest request) {
+        Location location = new Location();
+        location.setUserId(request.getUserId());
+        location.setStreet(request.getStreet());
+        location.setStreetNumber(request.getStreetNumber());
+        location.setStreetAddress(map.getFormattedAddress());
+        location.setLatitude(map.getLatitude());
+        location.setLongitud(map.getLongitude());
+        location.setComuna(comuna);
 
-    validationStreet(request.getStreet());
-    validationStreetNumber(request.getStreetNumber());
-    validationComuna(request.getComuna());
-    validationRegion(request.getRegion());
+        Location saved = locationRepo.save(location);
 
-    Location location = locationRepo.findByUserId(request.getUserId())
-            .orElseThrow(() -> new IllegalArgumentException("Locacion not Found"));
+        LocationResponse response = new LocationResponse();
+        response.setLocationId(saved.getLocationId());
+        response.setUserId(saved.getUserId());
+        response.setStreet(saved.getStreet());
+        response.setStreetNumber(saved.getStreetNumber());
+        response.setStreetAddress(saved.getStreetAddress());
+        response.setLatitude(saved.getLatitude());
+        response.setLongitude(saved.getLongitud());
+        response.setComunaNombre(comuna.getNombreComuna());
+        response.setRegionNombre(region.getNombreRegion());
 
-    MapsDTO map = mapService.geocode(
-            request.getStreet(),
-            request.getStreetNumber(),
-            request.getComuna(),
-            request.getRegion()
-    );
+        return response;
+    }
 
-    Region region = regionRepo.findByNombreRegion(request.getRegion())
-            .orElseGet(() -> {
-                Region newRegion = new Region();
-                newRegion.setNombreRegion(request.getRegion());
-                return regionRepo.save(newRegion);
-            });
+    public LocationResponse updateLocation(LocationRequest request) {
 
-    Comuna comuna = comunaRepo.findByNombreComuna(request.getComuna())
-            .orElseGet(() -> {
-                Comuna newComuna = new Comuna();
-                newComuna.setNombreComuna(request.getComuna());
-                newComuna.setRegion(region);
-                return comunaRepo.save(newComuna);
-            });
+        validationStreet(request.getStreet());
+        validationStreetNumber(request.getStreetNumber());
+        validationComuna(request.getComuna());
+        validationRegion(request.getRegion());
 
-    location.setStreet(request.getStreet());
-    location.setStreetNumber(request.getStreetNumber());
-    location.setStreetAddress(map.getFormattedAddress());
-    location.setLatitude(map.getLatitude());
-    location.setLongitud(map.getLongitude());
-    location.setComuna(comuna);
+        Location location = locationRepo.findByUserId(request.getUserId())
+                .orElseThrow(() -> new NotFoundException("Location not found"));
 
-    Location saved = locationRepo.save(location);
+        MapsDTO map = mapService.geocode(
+                request.getStreet(),
+                request.getStreetNumber(),
+                request.getComuna(),
+                request.getRegion()
+        );
 
-    LocationResponse response = new LocationResponse();
-    response.setLocationId(saved.getLocationId());
-    response.setUserId(saved.getUserId());
-    response.setStreet(saved.getStreet());
-    response.setStreetNumber(saved.getStreetNumber());
-    response.setStreetAddress(saved.getStreetAddress());
-    response.setLatitude(saved.getLatitude());
-    response.setLongitude(saved.getLongitud());
-    response.setComunaNombre(comuna.getNombreComuna());
-    response.setRegionNombre(region.getNombreRegion());
-    return response;
-}
+        Region region = regionRepo.findByNombreRegion(request.getRegion())
+                .orElseGet(() -> {
+                    Region newRegion = new Region();
+                    newRegion.setNombreRegion(request.getRegion());
+                    return regionRepo.save(newRegion);
+                });
 
-// Validaciones
-public void validationStreet(String street) {
-    if (street == null || street.isEmpty()) throw new IllegalArgumentException("La calle no puede estar vacía");
-}
+        Comuna comuna = comunaRepo.findByNombreComuna(request.getComuna())
+                .orElseGet(() -> {
+                    Comuna newComuna = new Comuna();
+                    newComuna.setNombreComuna(request.getComuna());
+                    newComuna.setRegion(region);
+                    return comunaRepo.save(newComuna);
+                });
 
-public void validationStreetNumber(String streetNumber) {
-    if (streetNumber == null || streetNumber.isEmpty()) throw new IllegalArgumentException("El número no puede estar vacío");
-}
+        location.setStreet(request.getStreet());
+        location.setStreetNumber(request.getStreetNumber());
+        location.setStreetAddress(map.getFormattedAddress());
+        location.setLatitude(map.getLatitude());
+        location.setLongitud(map.getLongitude());
+        location.setComuna(comuna);
 
-public void validationComuna(String comuna) {
-    if (comuna == null || comuna.isEmpty()) throw new IllegalArgumentException("La comuna no puede estar vacía");
-}
+        Location saved = locationRepo.save(location);
 
-public void validationRegion(String region) {
-    if (region == null || region.isEmpty()) throw new IllegalArgumentException("La región no puede estar vacía");
-}
+        LocationResponse response = new LocationResponse();
+        response.setLocationId(saved.getLocationId());
+        response.setUserId(saved.getUserId());
+        response.setStreet(saved.getStreet());
+        response.setStreetNumber(saved.getStreetNumber());
+        response.setStreetAddress(saved.getStreetAddress());
+        response.setLatitude(saved.getLatitude());
+        response.setLongitude(saved.getLongitud());
+        response.setComunaNombre(comuna.getNombreComuna());
+        response.setRegionNombre(region.getNombreRegion());
+
+        return response;
+    }
+
+    // VALIDATIONS
+
+    public void validationStreet(String street) {
+
+        if (street == null || street.isEmpty()) {
+            throw new IllegalArgumentException("Street cannot be empty");
+        }
+    }
+
+    public void validationStreetNumber(String streetNumber) {
+
+        if (streetNumber == null || streetNumber.isEmpty()) {
+            throw new IllegalArgumentException("Street number cannot be empty");
+        }
+    }
+
+    public void validationComuna(String comuna) {
+
+        if (comuna == null || comuna.isEmpty()) {
+            throw new IllegalArgumentException("Comuna cannot be empty");
+        }
+    }
+
+    public void validationRegion(String region) {
+
+        if (region == null || region.isEmpty()) {
+            throw new IllegalArgumentException("Region cannot be empty");
+        }
+    }
 }
