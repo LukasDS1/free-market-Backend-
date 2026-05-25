@@ -1,5 +1,7 @@
 package com.freemarket.reserva_service.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -221,4 +223,46 @@ public class ProductoController {
             .status(HttpStatus.ACCEPTED)
             .build();
     }
+
+    @PatchMapping("/activate/{id}")
+@Operation(
+    summary = "Activate product",
+    description = "Activates a previously deactivated product"
+)
+@ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Product activated successfully"
+    ),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Product not found",
+        content = @Content(mediaType = "application/json")
+    )
+})
+public ResponseEntity<?> activateProduct(
+
+    @Parameter(
+        description = "Product id",
+        example = "5",
+        required = true
+    )
+
+    @PathVariable Long id
+) {
+
+    productService.activateProduct(id);
+
+    return ResponseEntity.ok().build();
+}
+
+@GetMapping("/get/active")
+public ResponseEntity<List<ProductoResponse>> getActiveProducts() {
+
+    return ResponseEntity.ok(
+        productService.findActiveProducts()
+    );
+
+}
+
 }

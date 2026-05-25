@@ -68,6 +68,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 15s
@@ -88,6 +90,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx512m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_auth
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -114,6 +117,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx512m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_privileges
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -138,6 +142,7 @@ services:
       privileges-service:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
   reserva-service:
@@ -155,6 +160,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_reserve
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -177,6 +183,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_locations
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -197,6 +204,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_config
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -221,6 +229,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_delivery
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root

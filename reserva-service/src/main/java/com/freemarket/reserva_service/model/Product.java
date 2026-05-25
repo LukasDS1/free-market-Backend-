@@ -43,6 +43,9 @@ public class Product {
     (nullable = false,length = 50)
     private Integer productStock;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idReserveDetails")
     @JsonIgnoreProperties("product")
