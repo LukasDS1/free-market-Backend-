@@ -28,4 +28,7 @@ public class ProductoResponse {
 
     @Schema(description = "Stock disponible", example = "100")
     public Integer stock;
+
+    @Schema(description = "Indicates if the product is active", example = "true")
+    public Boolean active;
 }

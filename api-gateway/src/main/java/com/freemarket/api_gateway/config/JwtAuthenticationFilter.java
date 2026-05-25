@@ -41,7 +41,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     "/api-v1/auth/password/reset-request",
     "/api-v1/auth/password/reset",
     "/api-v1/config/public",
-    "/api-v1/auth/password/validate-token"
+    "/api-v1/auth/password/validate-token",
+    "/api-v1/productos/get/active"
     );
 
     // Reemplaza el Map.ofEntries por esto:
@@ -63,6 +64,7 @@ static {
     ROUTE_PRIVILEGES.put("POST:/api-v1/productos/create",        "CREATE_PRODUCT");
     ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT");
     ROUTE_PRIVILEGES.put("DELETE:/api-v1/productos/delete/",     "DELETE_PRODUCT");
+    ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/activate/{id}", "UPDATE_PRODUCT");    
 
     // reserva
     ROUTE_PRIVILEGES.put("POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE");

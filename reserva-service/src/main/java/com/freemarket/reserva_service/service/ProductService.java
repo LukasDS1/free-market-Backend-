@@ -22,9 +22,41 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProviderRepository providerRepository;
 
+
+
+    public List<ProductoResponse> findActiveProducts() {
+
+    List<Product> products =
+        productRepository.findByActiveTrue();
+
+    List<ProductoResponse> responses =
+        new ArrayList<>();
+
+    for (Product product : products) {
+
+        ProductoResponse response =
+            new ProductoResponse();
+
+        response.setId(product.getIdProduct());
+        response.setName(product.getProductname());
+        response.setPrice(product.getProductprice());
+        response.setProovedorNombre(
+            product.getProvider().getProvidername()
+        );
+        response.setStock(product.getProductStock());
+        response.setUrl(product.getUrl());
+        response.setActive(product.getActive());
+
+        responses.add(response);
+    }
+
+    return responses;
+}
+
     public List<ProductoResponse> findAllProducts() {
 
         List<Product> products = productRepository.findAll();
+
         List<ProductoResponse> responses = new ArrayList<>();
 
         for (Product product : products) {
@@ -37,6 +69,7 @@ public class ProductService {
             response.setProovedorNombre(product.getProvider().getProvidername());
             response.setStock(product.getProductStock());
             response.setUrl(product.getUrl());
+            response.setActive(product.getActive());
 
             responses.add(response);
         }
@@ -63,6 +96,9 @@ public class ProductService {
         product.setProductStock(request.getStock());
         product.setProvider(provider);
 
+        // IMPORTANTE
+        product.setActive(true);
+
         Product saved = productRepository.save(product);
 
         ProductoResponse response = new ProductoResponse();
@@ -73,6 +109,7 @@ public class ProductService {
         response.setStock(saved.getProductStock());
         response.setUrl(saved.getUrl());
         response.setProovedorNombre(saved.getProvider().getProvidername());
+        response.setActive(saved.getActive());
 
         return response;
     }
@@ -122,6 +159,7 @@ public class ProductService {
         response.setStock(saved.getProductStock());
         response.setUrl(saved.getUrl());
         response.setProovedorNombre(saved.getProvider().getProvidername());
+        response.setActive(saved.getActive());
 
         return response;
     }
@@ -134,11 +172,12 @@ public class ProductService {
 
     public void deleteProductById(Long id) {
 
-        if (!productRepository.existsById(id)) {
-            throw new NotFoundException("Product not found");
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
-        productRepository.deleteById(id);
+        product.setActive(false);
+
+        productRepository.save(product);
     }
 
     public void nameValidation(String name) {
@@ -168,6 +207,16 @@ public class ProductService {
             throw new IllegalArgumentException("Stock cannot be negative");
         }
     }
+
+    public void activateProduct(Long id) {
+
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Product not found"));
+
+    product.setActive(true);
+
+    productRepository.save(product);
+}
 
     private Provider findOrCreateProvider(String name) {
 
