@@ -45,6 +45,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -59,6 +60,7 @@ services:
   eureka-server:
     build: ./eureka-server
     container_name: eureka-server
+    restart: unless-stopped
     ports:
       - "8761:8761"
     networks:
@@ -80,6 +82,7 @@ services:
   auth-service:
     build: ./auth-service
     container_name: auth-service
+    restart: unless-stopped
     ports:
       - "8080:8080"
     networks:
@@ -90,7 +93,6 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx512m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_auth
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -107,6 +109,7 @@ services:
   privileges-service:
     build: ./privileges-service
     container_name: privileges-service
+    restart: unless-stopped
     ports:
       - "8082:8082"
     networks:
@@ -117,7 +120,6 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx512m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_privileges
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -132,6 +134,7 @@ services:
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway
+    restart: unless-stopped
     ports:
       - "8086:8086"
     networks:
@@ -142,12 +145,12 @@ services:
       privileges-service:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
   reserva-service:
     build: ./reserva-service
     container_name: reserva-service
+    restart: unless-stopped
     ports:
       - "8084:8084"
     networks:
@@ -160,7 +163,6 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_reserve
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -173,6 +175,7 @@ services:
   locations-service:
     build: ./locations-service
     container_name: locations-service
+    restart: unless-stopped
     ports:
       - "8083:8083"
     networks:
@@ -183,7 +186,6 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_locations
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -192,6 +194,7 @@ services:
   config-service:
     build: ./config-service
     container_name: config-service
+    restart: unless-stopped
     ports:
       - "8085:8085"
     networks:
@@ -204,7 +207,6 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_config
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -217,6 +219,7 @@ services:
   delivery-service:
     build: ./delivery-service
     container_name: delivery-service
+    restart: unless-stopped
     ports:
       - "8087:8087"
     networks:
@@ -229,7 +232,6 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/freemarket_delivery
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
