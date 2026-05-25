@@ -55,7 +55,8 @@ SecurityFilterChain securityFilterChain(
             "/api-v1/auth/role/**",
             "/api-v1/auth/refresh",
             "/actuator/health",
-            "/actuator/**"
+            "/actuator/**",
+            "/api-v1/auth/password/validate-token"
         ).permitAll()
         .requestMatchers(
             "/api-v1/auth/update/**",

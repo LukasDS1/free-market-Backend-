@@ -40,7 +40,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     "/api-v1/productos/get",
     "/api-v1/auth/password/reset-request",
     "/api-v1/auth/password/reset",
-    "/api-v1/config/public"
+    "/api-v1/config/public",
+    "/api-v1/auth/password/validate-token"
     );
 
     // Reemplaza el Map.ofEntries por esto:

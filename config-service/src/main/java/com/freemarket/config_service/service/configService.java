@@ -2,9 +2,11 @@ package com.freemarket.config_service.service;
 
 import java.sql.Date;
 import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 
 import com.freemarket.config_service.client.AuthClient;
+import com.freemarket.config_service.exception.NotFoundException;
 import com.freemarket.config_service.exception.ServiceUnavailableException;
 import com.freemarket.config_service.messaging.ConfigPendienteProducer;
 import com.freemarket.config_service.messaging.event.ConfigPendienteEvent;
@@ -12,6 +14,7 @@ import com.freemarket.config_service.model.Configuration;
 import com.freemarket.config_service.repository.ConfigRepository;
 import com.freemarket.config_service.request.ConfigRequest;
 import com.freemarket.config_service.response.ConfigResponse;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,162 +22,122 @@ import lombok.RequiredArgsConstructor;
 public class configService {
 
     private final ConfigRepository configRepo;
-
     private final AuthClient rest;
-    
     private final ConfigPendienteProducer pendienteProducer;
 
-
-    public ConfigResponse createConfiguration(ConfigRequest request){
-
+    public ConfigResponse createConfiguration(ConfigRequest request) {
         Boolean exist = rest.getUserById(request.getIdUser());
 
-        if(exist == null){
-        encolarCreate(request);                                   
-        throw new ServiceUnavailableException("Service is not available");
-    }
-
-        if(!exist){
-            throw new IllegalArgumentException();
+        if (exist == null) {
+            encolarCreate(request);
+            throw new ServiceUnavailableException("Service is not available");
         }
 
-        if (configRepo.existsByIdUser(request.getIdUser())) {
-        throw new IllegalStateException();
-}
+        if (!exist)
+            throw new NotFoundException("User not found");
+
+        if (configRepo.existsByIdUser(request.getIdUser()))
+            throw new IllegalArgumentException("A configuration already exists for this user");
+
+        centraliceValidation(request.getCommerceName());
+        centraliceValidation(request.getLogoUrl());
+        centraliceValidation(request.getFavicomUrl());
+        centraliceValidation(request.getPrimaryColor());
+        centraliceValidation(request.getSecondaryColor());
+        centraliceValidation(request.getPrincipalFont());
 
         Configuration config = new Configuration();
         config.setIdUser(request.getIdUser());
-
-        centraliceValidation(request.getCommerceName());
         config.setCommerceName(request.getCommerceName());
-
-        centraliceValidation(request.getLogoUrl());
         config.setLogoUrl(request.getLogoUrl());
-
-        centraliceValidation(request.getFavicomUrl());
         config.setFavicomUrl(request.getFavicomUrl());
-        
-        centraliceValidation(request.getPrimaryColor());
         config.setPrimarColor(request.getPrimaryColor());
-
-        centraliceValidation(request.getSecondaryColor());
         config.setSecondaryColor(request.getSecondaryColor());
-
-        centraliceValidation(request.getPrincipalFont());
         config.setPrincipalfont(request.getPrincipalFont());
-
         config.setUpdateAt(Date.valueOf(LocalDate.now()));
 
-        Configuration saved = configRepo.save(config);
-
-        ConfigResponse response = new ConfigResponse();
-        response.setId(saved.getIdConfig());
-        response.setCommerceName(saved.getCommerceName());
-        response.setLogoUrl(saved.getLogoUrl());
-        response.setFavicomUrl(saved.getFavicomUrl());
-        response.setPrimaryColor(saved.getPrimarColor());
-        response.setSecondaryColor(saved.getSecondaryColor());
-        response.setPrincipalFont(saved.getPrincipalfont());
-        response.setUpdateDate(saved.getUpdateAt());
-
-        return response;
-
+        return toResponse(configRepo.save(config));
     }
 
-    //update
     public ConfigResponse updateConfiguration(Long idConfig, ConfigRequest request) {
-    Configuration config = configRepo.findById(idConfig)
-        .orElseThrow(() -> new IllegalStateException("Configuración no encontrada"));
+        Configuration config = configRepo.findById(idConfig)
+            .orElseThrow(() -> new NotFoundException("Configuration not found"));
 
-    if (request.getCommerceName() != null) {
-        centraliceValidation(request.getCommerceName());
-        config.setCommerceName(request.getCommerceName());
-    }
-    if (request.getLogoUrl() != null)       config.setLogoUrl(request.getLogoUrl());
-    if (request.getFavicomUrl() != null)    config.setFavicomUrl(request.getFavicomUrl());
-    if (request.getPrimaryColor() != null)  config.setPrimarColor(request.getPrimaryColor());
-    if (request.getSecondaryColor() != null) config.setSecondaryColor(request.getSecondaryColor());
-    if (request.getPrincipalFont() != null) {
-        centraliceValidation(request.getPrincipalFont());
-        config.setPrincipalfont(request.getPrincipalFont());
-    }
-
-    config.setUpdateAt(Date.valueOf(LocalDate.now()));
-    Configuration saved = configRepo.save(config);
-    return toResponse(saved);
-}
-
-//obtener por id
-
-public ConfigResponse getConfigurationByIdUser(Long idUser) {
-    Configuration config = configRepo.findByIdUser(idUser).orElseThrow(() -> new IllegalStateException());
-    ConfigResponse response = new ConfigResponse();
-    response.setId(config.getIdConfig());
-    response.setCommerceName(config.getCommerceName());
-    response.setLogoUrl(config.getLogoUrl());
-    response.setFavicomUrl(config.getFavicomUrl());
-    response.setPrimaryColor(config.getPrimarColor());
-    response.setSecondaryColor(config.getSecondaryColor());
-    response.setPrincipalFont(config.getPrincipalfont());
-    response.setUpdateDate(config.getUpdateAt());
-
-    return response;
-}
-
-
-    //validaciones
-
-    public void centraliceValidation(String string){
-        if(string == null || string.isEmpty() ){
-            throw new IllegalArgumentException();
+        if (request.getCommerceName() != null) {
+            centraliceValidation(request.getCommerceName());
+            config.setCommerceName(request.getCommerceName());
         }
+        if (request.getLogoUrl() != null)        config.setLogoUrl(request.getLogoUrl());
+        if (request.getFavicomUrl() != null)     config.setFavicomUrl(request.getFavicomUrl());
+        if (request.getPrimaryColor() != null)   config.setPrimarColor(request.getPrimaryColor());
+        if (request.getSecondaryColor() != null) config.setSecondaryColor(request.getSecondaryColor());
+        if (request.getPrincipalFont() != null) {
+            centraliceValidation(request.getPrincipalFont());
+            config.setPrincipalfont(request.getPrincipalFont());
+        }
+
+        config.setUpdateAt(Date.valueOf(LocalDate.now()));
+        return toResponse(configRepo.save(config));
     }
 
+    public ConfigResponse getConfigurationByIdUser(Long idUser) {
+        Configuration config = configRepo.findByIdUser(idUser)
+            .orElseThrow(() -> new NotFoundException("Configuration not found for this user"));
+        return toResponse(config);
+    }
 
-private void encolarUpdate(ConfigRequest request) {
-    ConfigPendienteEvent event = toEvent(request, ConfigPendienteEvent.OperationType.UPDATE);
-    pendienteProducer.enviarConfigPendiente(event);
-}
-    
-private ConfigPendienteEvent toEvent(ConfigRequest req, ConfigPendienteEvent.OperationType type) {
-    return new ConfigPendienteEvent(
-        req.getIdUser(),
-        req.getCommerceName(),
-        req.getLogoUrl(),
-        req.getFavicomUrl(),
-        req.getPrimaryColor(),
-        req.getSecondaryColor(),
-        req.getPrincipalFont(),
-        type
-    );
-}
+    public ConfigResponse getPublicConfiguration() {
+        return configRepo.findAll()
+            .stream()
+            .findFirst()
+            .map(this::toResponse)
+            .orElseThrow(() -> new NotFoundException("No configuration found"));
+    }
 
-private void encolarCreate(ConfigRequest request) {
-    pendienteProducer.enviarConfigPendiente(
-        toEvent(request, ConfigPendienteEvent.OperationType.CREATE)
-    );
-}
+    // validations
 
+    private void centraliceValidation(String value) {
+        if (value == null || value.isBlank())
+            throw new IllegalArgumentException("Field cannot be empty");
+    }
 
-public ConfigResponse getPublicConfiguration() {
-    return configRepo.findAll()
-        .stream()
-        .findFirst()
-        .map(this::toResponse)
-        .orElseThrow(() -> new RuntimeException("No config found"));
-}
+    // queue
 
-private ConfigResponse toResponse(Configuration config) {
-    ConfigResponse response = new ConfigResponse();
-    response.setId(config.getIdConfig());
-    response.setCommerceName(config.getCommerceName());
-    response.setLogoUrl(config.getLogoUrl());
-    response.setFavicomUrl(config.getFavicomUrl());
-    response.setPrimaryColor(config.getPrimarColor());
-    response.setSecondaryColor(config.getSecondaryColor());
-    response.setPrincipalFont(config.getPrincipalfont());
-    response.setUpdateDate(config.getUpdateAt());
-    return response;
-}
+    private void encolarCreate(ConfigRequest request) {
+        pendienteProducer.enviarConfigPendiente(
+            toEvent(request, ConfigPendienteEvent.OperationType.CREATE)
+        );
+    }
 
+    private void encolarUpdate(ConfigRequest request) {
+        pendienteProducer.enviarConfigPendiente(
+            toEvent(request, ConfigPendienteEvent.OperationType.UPDATE)
+        );
+    }
+
+    private ConfigPendienteEvent toEvent(ConfigRequest req, ConfigPendienteEvent.OperationType type) {
+        return new ConfigPendienteEvent(
+            req.getIdUser(),
+            req.getCommerceName(),
+            req.getLogoUrl(),
+            req.getFavicomUrl(),
+            req.getPrimaryColor(),
+            req.getSecondaryColor(),
+            req.getPrincipalFont(),
+            type
+        );
+    }
+
+    private ConfigResponse toResponse(Configuration config) {
+        ConfigResponse response = new ConfigResponse();
+        response.setId(config.getIdConfig());
+        response.setCommerceName(config.getCommerceName());
+        response.setLogoUrl(config.getLogoUrl());
+        response.setFavicomUrl(config.getFavicomUrl());
+        response.setPrimaryColor(config.getPrimarColor());
+        response.setSecondaryColor(config.getSecondaryColor());
+        response.setPrincipalFont(config.getPrincipalfont());
+        response.setUpdateDate(config.getUpdateAt());
+        return response;
+    }
 }

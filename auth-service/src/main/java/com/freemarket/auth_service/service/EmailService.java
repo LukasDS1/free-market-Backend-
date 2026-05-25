@@ -14,8 +14,8 @@ public class EmailService {
      public void sendPasswordReset(String toEmail, String newPassword) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("Recuperación de contraseña");
-        message.setText("Ingresa este token para recuperar la contraseña: " + newPassword );
+        message.setSubject("Password Recovery");
+        message.setText("Enter this token to reset your password: " + newPassword );
         mailSender.send(message);
     }
 

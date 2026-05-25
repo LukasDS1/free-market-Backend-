@@ -1,22 +1,19 @@
 package com.freemarket.reserva_service.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.freemarket.reserva_service.request.ProductoRequest;
 import com.freemarket.reserva_service.response.ProductoResponse;
 import com.freemarket.reserva_service.service.ProductService;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,88 +23,202 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("api-v1/productos")
 @RequiredArgsConstructor
-@Tag(name = "Producto Controller", description = "Endpoints para gestión de productos del sistema de reservas")
+@Tag(
+    name = "Producto Controller",
+    description = "Product management endpoints for the reservation system"
+)
 public class ProductoController {
 
     private final ProductService productService;
 
-
     @GetMapping("/get")
-    @Operation(summary = "Obtener todos los productos", description = "Retorna todos los productos existentes")
+    @Operation(
+        summary = "Get all products",
+        description = "Returns all registered products"
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Producto encontrados",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Productos no encontrado",
-            content = @Content(mediaType = "application/json"))
+        @ApiResponse(
+            responseCode = "200",
+            description = "Products retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ProductoResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Products not found",
+            content = @Content(mediaType = "application/json")
+        )
     })
     public ResponseEntity<?> getProductALlProducts() {
-        return ResponseEntity.ok().body(productService.findAllProducts());
+
+        return ResponseEntity.ok(
+            productService.findAllProducts()
+        );
     }
 
     @PostMapping("/create")
-    @Operation(summary = "Crear producto", description = "Registra un nuevo producto en el sistema")
+    @Operation(
+        summary = "Create product",
+        description = "Creates a new product"
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Producto creado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Datos de solicitud inválidos",
-            content = @Content(mediaType = "application/json"))
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ProductoResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request data",
+            content = @Content(mediaType = "application/json")
+        )
     })
     public ResponseEntity<ProductoResponse> createProduct(
+
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Datos del producto a crear", required = true,
-            content = @Content(schema = @Schema(implementation = ProductoRequest.class)))
-        @RequestBody ProductoRequest request) {
-        return ResponseEntity.ok().body(productService.createProduct(request));
+            description = "Product data",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = ProductoRequest.class)
+            )
+        )
+
+        @RequestBody ProductoRequest request
+    ) {
+
+        return ResponseEntity.ok(
+            productService.createProduct(request)
+        );
     }
 
     @GetMapping("/get/{id}")
-    @Operation(summary = "Obtener producto por ID", description = "Retorna los datos de un producto según su ID")
+    @Operation(
+        summary = "Get product by id",
+        description = "Returns a product using its id"
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Producto encontrado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
-            content = @Content(mediaType = "application/json"))
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ProductoResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content = @Content(mediaType = "application/json")
+        )
     })
     public ResponseEntity<?> getProductById(
-        @Parameter(description = "ID del producto a consultar", example = "5", required = true)
-        @PathVariable Long id) {
-        return ResponseEntity.ok().body(productService.getProductById(id));
+
+        @Parameter(
+            description = "Product id",
+            example = "5",
+            required = true
+        )
+
+        @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+            productService.getProductById(id)
+        );
     }
-    
+
     @PatchMapping("/update/{id}")
-    @Operation(summary = "Actualizar producto", description = "Actualiza parcialmente los datos de un producto por su ID")
+    @Operation(
+        summary = "Update product",
+        description = "Partially updates a product"
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductoResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
-            content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "400", description = "Datos de solicitud inválidos",
-            content = @Content(mediaType = "application/json"))
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product updated successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ProductoResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request data",
+            content = @Content(mediaType = "application/json")
+        )
     })
     public ResponseEntity<ProductoResponse> updateProduct(
+
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Datos a actualizar del producto", required = true,
-            content = @Content(schema = @Schema(implementation = ProductoRequest.class)))
+            description = "Product data to update",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = ProductoRequest.class)
+            )
+        )
+
         @RequestBody ProductoRequest request,
-        @Parameter(description = "ID del producto a actualizar", example = "5", required = true)
-        @PathVariable Long id) {
-        return ResponseEntity.ok().body(productService.updateProduct(id, request));
+
+        @Parameter(
+            description = "Product id",
+            example = "5",
+            required = true
+        )
+
+        @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+            productService.updateProduct(id, request)
+        );
     }
 
     @DeleteMapping("/delete/{id}")
-    @Operation(summary = "Eliminar producto", description = "Elimina un producto del sistema por su ID")
+    @Operation(
+        summary = "Delete product",
+        description = "Deletes a product by id"
+    )
     @ApiResponses({
-        @ApiResponse(responseCode = "202", description = "Producto eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
-            content = @Content(mediaType = "application/json"))
+        @ApiResponse(
+            responseCode = "202",
+            description = "Product deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content = @Content(mediaType = "application/json")
+        )
     })
     public ResponseEntity<?> deleteProduct(
-        @Parameter(description = "ID del producto a eliminar", example = "5", required = true)
-        @PathVariable Long id) {
+
+        @Parameter(
+            description = "Product id",
+            example = "5",
+            required = true
+        )
+
+        @PathVariable Long id
+    ) {
+
         productService.deleteProductById(id);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+
+        return ResponseEntity
+            .status(HttpStatus.ACCEPTED)
+            .build();
     }
 }

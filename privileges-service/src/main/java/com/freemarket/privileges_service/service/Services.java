@@ -2,9 +2,11 @@ package com.freemarket.privileges_service.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.freemarket.privileges_service.client.Client;
+import com.freemarket.privileges_service.exception.NotFoundException;
 import com.freemarket.privileges_service.exception.ServiceUnavailableException;
 import com.freemarket.privileges_service.model.Modulo;
 import com.freemarket.privileges_service.model.Privileges;
@@ -17,11 +19,11 @@ import com.freemarket.privileges_service.request.PrivilegeRequest;
 import com.freemarket.privileges_service.request.moduloRequest;
 import com.freemarket.privileges_service.response.ResponseDTO;
 import com.freemarket.privileges_service.response.moduloResponse;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
 public class Services {
 
     private final ModuloRepository moduloRepository;
@@ -32,94 +34,135 @@ public class Services {
 
     private final PrivilegesRepository privilegesRepository;
 
-    
     public moduloResponse createModulo(moduloRequest request) {
 
         if (moduloRepository.existsByModuloname(request.getModuloname())) {
-        throw new IllegalArgumentException("Modulo con nombre "+request.getModuloname()+" ya existe");
+            throw new IllegalArgumentException(
+                    "Module  with name " + request.getModuloname() + " alredy exist");
+        }
+
+        Modulo modulo = new Modulo();
+        modulo.setModuloname(request.getModuloname());
+
+        Modulo moduloGuardado = moduloRepository.save(modulo);
+
+        return new moduloResponse(
+                moduloGuardado.getModuloId(),
+                moduloGuardado.getModuloname());
     }
 
-    Modulo modulo = new Modulo();
-    modulo.setModuloname(request.getModuloname());
-    
-    Modulo moduloGuardado = moduloRepository.save(modulo);
+    public List<ResponseDTO> getPrivilegesByRole(Long roleId) {
 
-    return new moduloResponse(moduloGuardado.getModuloId(),moduloGuardado.getModuloname());
+        Boolean exist = rest.getRoleById(roleId);
+
+        if (exist == null) {
+            throw new ServiceUnavailableException(
+                    "Service is not available, try again later");
+        }
+
+        if (!exist) {
+            throw new NotFoundException("Role not found");
+        }
+
+        List<rolPrivileges> list = rolRepo.findByRoleId(roleId);
+
+        return list.stream()
+                .map(rp -> new ResponseDTO(
+                        rp.getPrivilege().getPrivilegeName(),
+                        rp.getPrivilege().getModulo().getModuloname()))
+                .collect(Collectors.toList());
     }
 
-
-
-public List<ResponseDTO> getPrivilegesByRole(Long roleId) {
-
-    Boolean exist = rest.getRoleById(roleId);
-
-    if(exist == null){
-        throw new ServiceUnavailableException("Service is not avalible,try again later");
+    // GET all modulos
+    public List<moduloResponse> getAllModulos() {
+        return moduloRepository.findAll()
+                .stream()
+                .map(m -> new moduloResponse(
+                        m.getModuloId(),
+                        m.getModuloname()))
+                .toList();
     }
 
-    if(!exist){
-        throw new IllegalArgumentException("Rol no encontrado");
+    // GET all privileges
+    public List<ResponseDTO> getAllPrivileges() {
+        return privilegesRepository.findAll()
+                .stream()
+                .map(p -> new ResponseDTO(
+                        p.getPrivilegeName(),
+                        p.getModulo().getModuloname()))
+                .toList();
     }
 
-    List<rolPrivileges> list = rolRepo.findByRoleId(roleId);
-    
+    // CREATE privilege
+    public ResponseDTO createPrivilege(PrivilegeRequest request) {
 
-    return list.stream()
-        .map(rp -> new ResponseDTO(
-            rp.getPrivilege().getPrivilegeName(),
-            rp.getPrivilege().getModulo().getModuloname()))
-        .collect(Collectors.toList());
-}
+        if (privilegesRepository.findByPrivilegeName(
+                request.getPrivilegeName()).isPresent()) {
 
-// GET all modulos
-public List<moduloResponse> getAllModulos() {
-    return moduloRepository.findAll()
-        .stream()
-        .map(m -> new moduloResponse(m.getModuloId(), m.getModuloname()))
-        .toList();
-}
+            throw new IllegalArgumentException("Privilege already exists");
+        }
 
-// GET all privileges
-public List<ResponseDTO> getAllPrivileges() {
-    return privilegesRepository.findAll()
-        .stream()
-        .map(p -> new ResponseDTO(p.getPrivilegeName(), p.getModulo().getModuloname()))
-        .toList();
-}
+        Modulo modulo = moduloRepository.findById(request.getModuloId())
+                .orElseThrow(() -> new NotFoundException("Module not found"));
 
-// CREATE privilege
-public ResponseDTO createPrivilege(PrivilegeRequest request) {
-    if (privilegesRepository.findByPrivilegeName(request.getPrivilegeName()).isPresent()) {
-        throw new IllegalArgumentException("Privilegio ya existe");
+        Privileges p = new Privileges(
+                null,
+                request.getPrivilegeName(),
+                modulo);
+
+        Privileges saved = privilegesRepository.save(p);
+
+        return new ResponseDTO(
+                saved.getPrivilegeName(),
+                saved.getModulo().getModuloname());
     }
-    Modulo modulo = moduloRepository.findById(request.getModuloId())
-        .orElseThrow(() -> new IllegalArgumentException("Modulo no encontrado"));
-    Privileges p = new Privileges(null, request.getPrivilegeName(), modulo);
-    Privileges saved = privilegesRepository.save(p);
-    return new ResponseDTO(saved.getPrivilegeName(), saved.getModulo().getModuloname());
-}
 
-// ASIGNAR privilege a rol
-public void asignarPrivilegioARol(AsignarPrivilegioRequest request) {
-    if (rolRepo.existsByRoleIdAndPrivilege_PrivilegesId(request.getRoleId(), request.getPrivilegeId())) {
-        throw new IllegalArgumentException("El rol ya tiene ese privilegio");
+    // ASIGNAR privilege a rol
+    public void asignarPrivilegioARol(AsignarPrivilegioRequest request) {
+
+        if (rolRepo.existsByRoleIdAndPrivilege_PrivilegesId(
+                request.getRoleId(),
+                request.getPrivilegeId())) {
+
+            throw new IllegalArgumentException(
+                    "The role already has this privilege");
+        }
+
+        Boolean rolExiste = rest.getRoleById(request.getRoleId());
+
+        if (rolExiste == null) {
+            throw new ServiceUnavailableException(
+                    "Service is not available");
+        }
+
+        if (!rolExiste) {
+            throw new NotFoundException("Role not found");
+        }
+
+        Privileges p = privilegesRepository.findById(
+                request.getPrivilegeId())
+                .orElseThrow(() ->
+                        new NotFoundException("Privilege not found"));
+
+        rolRepo.save(new rolPrivileges(
+                null,
+                request.getRoleId(),
+                p));
     }
-    Boolean rolExiste = rest.getRoleById(request.getRoleId());
-    if (rolExiste == null) throw new ServiceUnavailableException("Service no disponible");
-    if (!rolExiste) throw new IllegalArgumentException("Rol no encontrado");
 
-    Privileges p = privilegesRepository.findById(request.getPrivilegeId())
-        .orElseThrow(() -> new IllegalArgumentException("Privilegio no encontrado"));
-    rolRepo.save(new rolPrivileges(null, request.getRoleId(), p));
-}
+    // ELIMINAR privilege de rol
+    public void eliminarPrivilegioDeRol(Long roleId, Long privilegeId) {
 
-// ELIMINAR privilege de rol
-public void eliminarPrivilegioDeRol(Long roleId, Long privilegeId) {
-    if (!rolRepo.existsByRoleIdAndPrivilege_PrivilegesId(roleId, privilegeId)) {
-        throw new IllegalArgumentException("El rol no tiene ese privilegio");
+        if (!rolRepo.existsByRoleIdAndPrivilege_PrivilegesId(
+                roleId,
+                privilegeId)) {
+
+            throw new IllegalArgumentException(
+                    "The role does not have this privilege");
+        }
+
+        rolRepo.deleteByRoleIdAndPrivilege_PrivilegesId(
+                roleId,
+                privilegeId);
     }
-    rolRepo.deleteByRoleIdAndPrivilege_PrivilegesId(roleId, privilegeId);
-}
-    
-
 }

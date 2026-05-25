@@ -2,6 +2,7 @@ package com.freemarket.config_service.service;
 
 import org.springframework.stereotype.Service;
 
+import com.freemarket.config_service.exception.NotFoundException;
 import com.freemarket.config_service.model.SystemConfig;
 import com.freemarket.config_service.repository.SystemConfigRepository;
 
@@ -15,19 +16,19 @@ public class SystemConfigService {
 
     public String getConfigValue(String key) {
         return systemConfigRepo.findByConfigKey(key)
-            .orElseThrow(() -> new IllegalArgumentException("Config no encontrada: " + key))
+            .orElseThrow(() -> new NotFoundException("Config not found: " + key))
             .getConfigValue();
     }
 
     public SystemConfig updateCountry(String countryCode, String countryName) {
         SystemConfig config = systemConfigRepo.findByConfigKey("search_country")
-            .orElseThrow(() -> new IllegalArgumentException("Config no encontrada"));
+            .orElseThrow(() -> new NotFoundException("System config not found"));
         config.setConfigValue(countryCode.toLowerCase());
         return systemConfigRepo.save(config);
     }
 
     public SystemConfig getCountry() {
         return systemConfigRepo.findByConfigKey("search_country")
-            .orElseThrow(() -> new IllegalArgumentException("Config no encontrada"));
+            .orElseThrow(() -> new NotFoundException("System config not found"));
     }
 }
