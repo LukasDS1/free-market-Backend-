@@ -47,6 +47,7 @@ public class LoadDataBase {
             prod1.setUrl("https://images.example.com/teclado-rgb.jpg");
             prod1.setProductprice(29990);
             prod1.setProductStock(50);
+            prod1.setActive(true);
             prod1.setProvider(p1);
 
             Product prod2 = new Product();
@@ -54,6 +55,7 @@ public class LoadDataBase {
             prod2.setUrl("https://images.example.com/monitor-24.jpg");
             prod2.setProductprice(149990);
             prod2.setProductStock(20);
+            prod2.setActive(true);
             prod2.setProvider(p1);
 
             Product prod3 = new Product();
@@ -61,6 +63,7 @@ public class LoadDataBase {
             prod3.setUrl("https://images.example.com/mouse-wireless.jpg");
             prod3.setProductprice(14990);
             prod3.setProductStock(100);
+            prod3.setActive(true);
             prod3.setProvider(p2);
 
             productRepo.save(prod1);
