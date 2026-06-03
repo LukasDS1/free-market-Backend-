@@ -33,80 +33,80 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final String SECRET_KEY = "VGhpc0lzQVNlY3VyZUtleUZvckpXVFdpdGhIbWFjU0hBMjU2IQ==";
 
     private static final List<String> PUBLIC_ROUTES = List.of(
-    "/api-v1/auth/login",
-    "/api-v1/auth/register",
-    "/api-v1/auth/refresh",
-    "/api-v1/auth/logout",
-    "/api-v1/productos/get",
-    "/api-v1/auth/password/reset-request",
-    "/api-v1/auth/password/reset",
-    "/api-v1/config/public",
-    "/api-v1/auth/password/validate-token",
-    "/api-v1/productos/get/active"
-    );
+            "/api-v1/auth/login",
+            "/api-v1/auth/register",
+            "/api-v1/auth/refresh",
+            "/api-v1/auth/logout",
+            "/api-v1/productos/get",
+            "/api-v1/auth/password/reset-request",
+            "/api-v1/auth/password/reset",
+            "/api-v1/config/public",
+            "/api-v1/auth/password/validate-token",
+            "/api-v1/productos/get/active");
 
     // Reemplaza el Map.ofEntries por esto:
-private static final Map<String, String> ROUTE_PRIVILEGES;
+    private static final Map<String, String> ROUTE_PRIVILEGES;
 
-static {
-    ROUTE_PRIVILEGES = new java.util.LinkedHashMap<>();
-    
-    // auth
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/update",            "UPDATE_USER");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/setState/",         "SET_STATE_USER");
-    ROUTE_PRIVILEGES.put("POST:/api-v1/auth/rol",                "CREATE_ROL");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/rol/change",        "CHANGE_ROL_USER");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/auth/getall",              "READ_USER");
-    ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete/admin/",    "DELETE_USER");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/auth/rol/getall",          "READ_ROL");
+    static {
+        ROUTE_PRIVILEGES = new java.util.LinkedHashMap<>();
 
-    // productos
-    ROUTE_PRIVILEGES.put("POST:/api-v1/productos/create",        "CREATE_PRODUCT");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/update/",      "UPDATE_PRODUCT");
-    ROUTE_PRIVILEGES.put("DELETE:/api-v1/productos/delete/",     "DELETE_PRODUCT");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/activate/{id}", "UPDATE_PRODUCT");    
+        // auth
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/update", "UPDATE_USER");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/setState/", "SET_STATE_USER");
+        ROUTE_PRIVILEGES.put("POST:/api-v1/auth/rol", "CREATE_ROL");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/auth/rol/change", "CHANGE_ROL_USER");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/auth/getall", "READ_USER");
+        ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete/admin/", "DELETE_USER");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/auth/rol/getall", "READ_ROL");
 
-    // reserva
-    ROUTE_PRIVILEGES.put("POST:/api-v1/reserve/createReserve",   "CREATE_RESERVE");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel/",        "DELETE_RESERVE");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel",         "UPDATE_RESERVE");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/getallreserve",    "READ_RESERVE");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/user/",            "READ_RESERVE");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/",                 "READ_RESERVE");
+        // productos
+        ROUTE_PRIVILEGES.put("POST:/api-v1/productos/create", "CREATE_PRODUCT");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/update/", "UPDATE_PRODUCT");
+        ROUTE_PRIVILEGES.put("DELETE:/api-v1/productos/delete/", "DELETE_PRODUCT");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/productos/activate/{id}", "UPDATE_PRODUCT");
 
-    // config
-    ROUTE_PRIVILEGES.put("POST:/api-v1/config/create",           "CREATE_SYSTEM_CONFIG");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/config/update/",         "UPDATE_SYSTEM_CONFIG");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/config/get/",              "READ_SYSTEM_CONFIG");
+        // reserva
+        ROUTE_PRIVILEGES.put("POST:/api-v1/reserve/createReserve", "CREATE_RESERVE");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel/", "DELETE_RESERVE");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/reserve/cancel", "UPDATE_RESERVE");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/getallreserve", "READ_RESERVE");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/user/", "READ_RESERVE");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/reserve/", "READ_RESERVE");
 
-    // delivery — MÁS ESPECÍFICAS PRIMERO
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva/status/","UPDATE_DELIVERY_STATE");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva",        "UPDATE_DELIVERY_STATE");
-    ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/take",            "PATCH_DELIVERY");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/status/",          "READ_DELIVERY");  
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/delivery/",        "READ_DELIVERY");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reserva/",         "READ_DELIVERY");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/usuario/",         "READ_DELIVERY");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/all",              "READ_DELIVERY");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/",                 "READ_DELIVERY"); 
-    ROUTE_PRIVILEGES.put("GET:/api-v1/delivery",                  "READ_DELIVERY");
+        // config
+        ROUTE_PRIVILEGES.put("POST:/api-v1/config/create", "CREATE_SYSTEM_CONFIG");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/config/update/", "UPDATE_SYSTEM_CONFIG");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/config/get/", "READ_SYSTEM_CONFIG");
 
-    // location
-    ROUTE_PRIVILEGES.put("POST:/api-v1/location/createLocation",  "CREATE_LOCATION");
-    ROUTE_PRIVILEGES.put("PUT:/api-v1/location/updateLocation",   "UPDATE_LOCATION");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/location/getLocation/",     "READ_LOCATION");
+        // delivery 
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva/status/", "UPDATE_DELIVERY_STATE");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reserva", "UPDATE_DELIVERY_STATE");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/take", "PATCH_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/status/", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/delivery/", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reserva/", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/usuario/", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/all", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/", "READ_DELIVERY");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery", "READ_DELIVERY");
 
-    // privileges
-    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/modules",       "CREATE_ROL");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/modules",        "READ_USER");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/all",            "READ_USER");
-    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/create",        "CREATE_ROL");
-    ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/asignar",       "CHANGE_ROL_USER");
-    ROUTE_PRIVILEGES.put("DELETE:/api-v1/privileges/eliminar/",   "CHANGE_ROL_USER");
-    ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/role/",          "READ_USER");
+        // location
+        ROUTE_PRIVILEGES.put("POST:/api-v1/location/createLocation", "CREATE_LOCATION");
+        ROUTE_PRIVILEGES.put("PUT:/api-v1/location/updateLocation", "UPDATE_LOCATION");
+        ROUTE_PRIVILEGES.put("DELETE:/api-v1/location/deleteLocation", "DELETE_LOCATION");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/location/setActive", "UPDATE_LOCATION");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/location/getLocations/", "READ_LOCATION");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/location/getLocation/", "READ_LOCATION");
 
-    // auth delete
-    ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete",            "DELETE_USER");
+        // privileges
+        ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/modules", "CREATE_ROL");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/modules", "READ_USER");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/all", "READ_USER");
+        ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/create", "CREATE_ROL");
+        ROUTE_PRIVILEGES.put("POST:/api-v1/privileges/asignar", "CHANGE_ROL_USER");
+        ROUTE_PRIVILEGES.put("DELETE:/api-v1/privileges/eliminar/", "CHANGE_ROL_USER");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/privileges/role/", "READ_USER");
+        ROUTE_PRIVILEGES.put("DELETE:/api-v1/auth/delete", "DELETE_USER");
     }
 
     private final WebClient webClient;
@@ -114,9 +114,9 @@ static {
 
     public JwtAuthenticationFilter(
             @Qualifier("loadBalancedBuilder") WebClient.Builder webClientBuilder,
-            ReactiveCircuitBreakerFactory<?, ?> cbFactory) { 
+            ReactiveCircuitBreakerFactory<?, ?> cbFactory) {
         this.webClient = webClientBuilder.baseUrl("http://privileges-service").build();
-        this.circuitBreaker = cbFactory.create("privileges-service"); 
+        this.circuitBreaker = cbFactory.create("privileges-service");
     }
 
     @Override
@@ -146,27 +146,27 @@ static {
             List<String> roles = claims.get("roles", List.class);
             Long roleId = claims.get("roleId", Long.class);
             String status = claims.get("status", String.class);
-            Long userId = claims.get("userId",Long.class);
+            Long userId = claims.get("userId", Long.class);
 
             if ("INACTIVO".equals(status)) {
-            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-            return exchange.getResponse().setComplete();
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
             }
 
             String requiredPrivilege = ROUTE_PRIVILEGES.entrySet().stream()
-                .filter(e -> e.getKey().startsWith(method + ":") &&
-                             path.startsWith(e.getKey().split(":")[1]))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
+                    .filter(e -> e.getKey().startsWith(method + ":") &&
+                            path.startsWith(e.getKey().split(":")[1]))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .orElse(null);
 
             ServerWebExchange mutatedExchange = exchange.mutate()
-                .request(r -> r
-                    .header("X-Username", username)
-                    .header("X-Roles", String.join(",", roles))
-                    .header("X-Role-Id", String.valueOf(roleId))
-                .header("X-User-Id", String.valueOf(userId)))
-                .build();
+                    .request(r -> r
+                            .header("X-Username", username)
+                            .header("X-Roles", String.join(",", roles))
+                            .header("X-Role-Id", String.valueOf(roleId))
+                            .header("X-User-Id", String.valueOf(userId)))
+                    .build();
 
             if (requiredPrivilege == null) {
                 return chain.filter(mutatedExchange);
@@ -175,29 +175,27 @@ static {
             String privilegeToCheck = requiredPrivilege;
 
             return circuitBreaker.run(
-                webClient.get()
-                    .uri("/api-v1/privileges/role/" + roleId)
-                    .retrieve()
-                    .bodyToFlux(ResponseDTO.class)
-                    .collectList()
-                    .flatMap(privileges -> {
-                        boolean hasPrivilege = privileges.stream()
-                            .anyMatch(p -> p.getPrivilegeName().equals(privilegeToCheck));
+                    webClient.get()
+                            .uri("/api-v1/privileges/role/" + roleId)
+                            .retrieve()
+                            .bodyToFlux(ResponseDTO.class)
+                            .collectList()
+                            .flatMap(privileges -> {
+                                boolean hasPrivilege = privileges.stream()
+                                        .anyMatch(p -> p.getPrivilegeName().equals(privilegeToCheck));
 
-                        if (!hasPrivilege) {
-                            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                            return exchange.getResponse().setComplete();
-                        }
+                                if (!hasPrivilege) {
+                                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                                    return exchange.getResponse().setComplete();
+                                }
 
+                                return chain.filter(mutatedExchange);
+                            }),
+                    throwable -> {
+                        log.error("Fallback activado: {}",
+                                throwable.getClass().getName() + " - " + throwable.getMessage());
                         return chain.filter(mutatedExchange);
-                    }),
-
-               //circuito abierto o timeout
-                throwable -> {
-                    log.error("Fallback activado: {}", throwable.getClass().getName() + " - " + throwable.getMessage());
-                    return chain.filter(mutatedExchange);
-                }
-            );
+                    });
         } catch (Exception e) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
@@ -205,13 +203,15 @@ static {
     }
 
     @Override
-    public int getOrder() { return -1; }
+    public int getOrder() {
+        return -1;
+    }
 
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY)))
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
+                .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY)))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

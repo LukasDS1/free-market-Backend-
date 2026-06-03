@@ -1,9 +1,11 @@
 package com.freemarket.locations_service.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.freemarket.locations_service.DTO.MapsDTO;
-import com.freemarket.locations_service.client.AuthClient;
 import com.freemarket.locations_service.excepcion.NotFoundException;
 import com.freemarket.locations_service.model.Comuna;
 import com.freemarket.locations_service.model.Location;
@@ -25,10 +27,8 @@ public class LocationsService {
     private final GoogleMapsService mapService;
     private final ComunaRepository comunaRepo;
     private final RegionRepository regionRepo;
-    private final AuthClient authClientService;
 
     public LocationResponseForId getLocationByUserId(Long id) {
-
         Location location = locationRepo.findByUserIdWithComunaAndRegion(id)
                 .orElseThrow(() -> new NotFoundException("User location not found"));
 
@@ -36,8 +36,19 @@ public class LocationsService {
         response.setStreetAddress(location.getStreetAddress());
         response.setComunaNombre(location.getComuna().getNombreComuna());
         response.setRegionNombre(location.getComuna().getRegion().getNombreRegion());
-
         return response;
+    }
+
+    public List<LocationResponseForId> getAllLocationsByUserId(Long id) {
+        return locationRepo.findAllByUserId(id).stream().map(location -> {
+            LocationResponseForId r = new LocationResponseForId();
+            r.setAddressType(location.getAddressType());
+            r.setStreetAddress(location.getStreetAddress());
+            r.setActive(location.isActive());
+            r.setComunaNombre(location.getComuna().getNombreComuna());
+            r.setRegionNombre(location.getComuna().getRegion().getNombreRegion());
+            return r;
+        }).collect(Collectors.toList());
     }
 
     public LocationResponse createUserLocation(LocationRequest request) {
@@ -46,6 +57,11 @@ public class LocationsService {
         validationStreetNumber(request.getStreetNumber());
         validationComuna(request.getComuna());
         validationRegion(request.getRegion());
+        validationAddressType(request.getAddressType());
+
+        locationRepo.findByUserIdAndAddressType(request.getUserId(), request.getAddressType())
+                .ifPresent(l -> { throw new IllegalArgumentException(
+                    "Ya existe una dirección de tipo " + request.getAddressType()); });
 
         MapsDTO map = mapService.geocode(
                 request.getStreet(),
@@ -69,6 +85,8 @@ public class LocationsService {
                     return comunaRepo.save(newComuna);
                 });
 
+        boolean isFirst = locationRepo.findAllByUserId(request.getUserId()).isEmpty();
+
         Location location = new Location();
         location.setUserId(request.getUserId());
         location.setStreet(request.getStreet());
@@ -77,6 +95,8 @@ public class LocationsService {
         location.setLatitude(map.getLatitude());
         location.setLongitud(map.getLongitude());
         location.setComuna(comuna);
+        location.setAddressType(request.getAddressType());
+        location.setActive(isFirst);
 
         Location saved = locationRepo.save(location);
 
@@ -100,8 +120,10 @@ public class LocationsService {
         validationStreetNumber(request.getStreetNumber());
         validationComuna(request.getComuna());
         validationRegion(request.getRegion());
+        validationAddressType(request.getAddressType());
 
-        Location location = locationRepo.findByUserId(request.getUserId())
+        Location location = locationRepo
+                .findByUserIdAndAddressType(request.getUserId(), request.getAddressType())
                 .orElseThrow(() -> new NotFoundException("Location not found"));
 
         MapsDTO map = mapService.geocode(
@@ -149,33 +171,60 @@ public class LocationsService {
         return response;
     }
 
-    // VALIDATIONS
+    public void deleteLocation(Long userId, String addressType) {
+
+        Location location = locationRepo
+                .findByUserIdAndAddressType(userId, addressType)
+                .orElseThrow(() -> new NotFoundException("Location not found"));
+
+        boolean wasActive = location.isActive();
+        locationRepo.delete(location);
+
+        if (wasActive) {
+            locationRepo.findAllByUserId(userId)
+                    .stream()
+                    .findFirst()
+                    .ifPresent(next -> {
+                        next.setActive(true);
+                        locationRepo.save(next);
+                    });
+        }
+    }
+
+    public void setActiveLocation(Long userId, String addressType) {
+
+        List<Location> all = locationRepo.findAllByUserId(userId);
+        if (all.isEmpty()) throw new NotFoundException("No locations found for user");
+
+        all.forEach(loc -> loc.setActive(loc.getAddressType().equals(addressType)));
+        locationRepo.saveAll(all);
+    }
+
 
     public void validationStreet(String street) {
-
-        if (street == null || street.isEmpty()) {
+        if (street == null || street.isEmpty())
             throw new IllegalArgumentException("Street cannot be empty");
-        }
     }
 
     public void validationStreetNumber(String streetNumber) {
-
-        if (streetNumber == null || streetNumber.isEmpty()) {
+        if (streetNumber == null || streetNumber.isEmpty())
             throw new IllegalArgumentException("Street number cannot be empty");
-        }
     }
 
     public void validationComuna(String comuna) {
-
-        if (comuna == null || comuna.isEmpty()) {
+        if (comuna == null || comuna.isEmpty())
             throw new IllegalArgumentException("Comuna cannot be empty");
-        }
     }
 
     public void validationRegion(String region) {
-
-        if (region == null || region.isEmpty()) {
+        if (region == null || region.isEmpty())
             throw new IllegalArgumentException("Region cannot be empty");
-        }
     }
+
+    public void validationAddressType(String addressType) {
+    if (addressType == null || (!addressType.equals("HOME")
+            && !addressType.equals("WORK")
+            && !addressType.equals("OTHER")))
+        throw new IllegalArgumentException("addressType must be HOME, WORK or OTHER");
+}
 }

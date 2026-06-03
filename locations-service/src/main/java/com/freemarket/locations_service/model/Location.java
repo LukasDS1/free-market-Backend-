@@ -47,6 +47,12 @@ public class Location {
     (nullable=false)
     private double latitude;
 
+    @Column(name = "address_type")
+    private String addressType; 
+
+    @Column(name = "is_active")
+    private boolean active;
+
     @ManyToOne
     @JoinColumn(name = "idComuna")
     private Comuna comuna;

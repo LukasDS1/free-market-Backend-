@@ -56,6 +56,8 @@ public class LoadDataBase {
             loc.setLatitude(-33.4290115);
             loc.setLongitud(-70.6211027);
             loc.setComuna(providencia);
+            loc.setAddressType("HOME");
+            loc.setActive(true);
             locationRepo.save(loc);
 
             System.out.println("Datos iniciales de locations_service cargados.");

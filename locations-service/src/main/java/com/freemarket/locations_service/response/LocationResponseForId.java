@@ -20,4 +20,8 @@ public class LocationResponseForId {
     @Schema(description = "Nombre de la región", example = "Región Metropolitana")
     public String regionNombre;
 
+    public String addressType;
+
+    public boolean active;
+
 }

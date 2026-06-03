@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 public class ReserveRequest {
     @Schema(description = "ID del usuario que realiza la reserva", example = "42", requiredMode = Schema.RequiredMode.REQUIRED)
     public Long idUser;
+    
+    @Schema(description = "Ubicacion del usuario", example = "Av.Siempre viva 3009", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String deliveryAddress;
 
     @Schema(description = "Lista de productos a reservar con sus cantidades", requiredMode = Schema.RequiredMode.REQUIRED)
     public List<ProductItemRequest> products;

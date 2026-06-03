@@ -81,6 +81,8 @@ public class LoadDataBase {
 
                 Privileges CreateLocation = new Privileges(null, "CREATE_LOCATION", ModuloLocation);
                 Privileges UpdateLocation = new Privileges(null, "UPDATE_LOCATION", ModuloLocation);
+                Privileges DeleteLocation = new Privileges(null, "DELETE_LOCATION", ModuloLocation);
+                privilegesRepository.save(DeleteLocation);
                 privilegesRepository.save(CreateLocation);
                 privilegesRepository.save(UpdateLocation);
 
@@ -149,6 +151,9 @@ public class LoadDataBase {
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadProduct));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, UpdateProduct));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, DeleteProduct));
+
+                rolePrivilegesList.add(new rolPrivileges(null, 1L, DeleteLocation));
+                rolePrivilegesList.add(new rolPrivileges(null, 2L, DeleteLocation));
 
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, CreateReserve));
                 rolePrivilegesList.add(new rolPrivileges(null, 1L, ReadReserve));

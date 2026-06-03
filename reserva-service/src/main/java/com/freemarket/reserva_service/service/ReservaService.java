@@ -35,32 +35,23 @@ import lombok.RequiredArgsConstructor;
 public class ReservaService {
 
     private final AuthClient authClient;
-
     private final ReserveDetailsRepository reserveDetailsRepository;
-
     private final ReserveRepository reserveRepository;
-
     private final ProductRepository productRepository;
-
     private final ReservaEventPublisher eventPublisher;
-
     private final ReservaPendienteProducer pendienteProducer;
 
     public List<ReservaResponse> getAllReservas() {
 
         List<Reserve> reservas = reserveRepository.findAll();
-
         List<ReservaResponse> responseList = new ArrayList<>();
 
         for (Reserve reserve : reservas) {
-
             ReservaResponse response = new ReservaResponse();
-
             response.setIdReserva(reserve.getIdReserva());
             response.setReserveDate(reserve.getReserveDate());
             response.setStatus(reserve.getStatus().toString());
             response.setTotalPrice(reserve.getTotalPrice());
-
             responseList.add(response);
         }
 
@@ -87,6 +78,7 @@ public class ReservaService {
                 reserve.getReserveDate(),
                 reserve.getTotalPrice(),
                 reserve.getStatus().name(),
+                reserve.getDeliveryAddress(),
                 products);
     }
 
@@ -95,16 +87,12 @@ public class ReservaService {
         Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
 
         if (existing.isPresent()) {
-
             Reserve reserve = existing.get();
-
             ReservaResponse response = new ReservaResponse();
-
             response.setIdReserva(reserve.getIdReserva());
             response.setReserveDate(reserve.getReserveDate());
             response.setTotalPrice(reserve.getTotalPrice());
             response.setStatus(reserve.getStatus().name());
-
             return response;
         }
 
@@ -126,26 +114,22 @@ public class ReservaService {
         Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
 
         if (existing.isPresent()) {
-
             Reserve reserve = existing.get();
-
             ReservaResponse response = new ReservaResponse();
-
             response.setIdReserva(reserve.getIdReserva());
             response.setReserveDate(reserve.getReserveDate());
             response.setTotalPrice(reserve.getTotalPrice());
             response.setStatus(reserve.getStatus().name());
-
             return response;
         }
 
         Reserve reserve = new Reserve();
-
         reserve.setIdUser(request.getIdUser());
         reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
         reserve.setStatus(ReserveStatus.PENDIENTE);
         reserve.setIdempotencyKey(idempotencyKey);
+        reserve.setDeliveryAddress(request.getDeliveryAddress()); // ← nuevo
 
         Reserve savedReserve = reserveRepository.save(reserve);
 
@@ -157,19 +141,16 @@ public class ReservaService {
                     .orElseThrow(() -> new NotFoundException("Product not found"));
 
             ReserveDetails details = new ReserveDetails();
-
             details.setQuanty(item.getQuantity());
             details.setUnitPrice(product.getProductprice());
             details.setProduct(product);
             details.setReserve(savedReserve);
 
             reserveDetailsRepository.save(details);
-
             total += product.getProductprice() * item.getQuantity();
         }
 
         savedReserve.setTotalPrice(total);
-
         reserveRepository.save(savedReserve);
 
         pendienteProducer.enviarReservaPendiente(
@@ -177,7 +158,6 @@ public class ReservaService {
                 request.getIdUser());
 
         ReservaResponse response = new ReservaResponse();
-
         response.setIdReserva(savedReserve.getIdReserva());
         response.setReserveDate(savedReserve.getReserveDate());
         response.setTotalPrice(savedReserve.getTotalPrice());
@@ -194,26 +174,22 @@ public class ReservaService {
         Optional<Reserve> existing = reserveRepository.findByIdempotencyKey(idempotencyKey);
 
         if (existing.isPresent()) {
-
             Reserve reserve = existing.get();
-
             ReservaResponse response = new ReservaResponse();
-
             response.setIdReserva(reserve.getIdReserva());
             response.setReserveDate(reserve.getReserveDate());
             response.setTotalPrice(reserve.getTotalPrice());
             response.setStatus(reserve.getStatus().name());
-
             return response;
         }
 
         Reserve reserve = new Reserve();
-
         reserve.setIdUser(request.getIdUser());
         reserve.setReserveDate(Date.valueOf(LocalDate.now()));
         reserve.setTotalPrice(0);
         reserve.setStatus(status);
         reserve.setIdempotencyKey(idempotencyKey);
+        reserve.setDeliveryAddress(request.getDeliveryAddress()); // ← nuevo
 
         Reserve savedReserve = reserveRepository.save(reserve);
 
@@ -228,25 +204,20 @@ public class ReservaService {
                 throw new IllegalArgumentException("Insufficient stock available");
             }
 
-            product.setProductStock(
-                    product.getProductStock() - item.getQuantity());
-
+            product.setProductStock(product.getProductStock() - item.getQuantity());
             productRepository.save(product);
 
             ReserveDetails details = new ReserveDetails();
-
             details.setQuanty(item.getQuantity());
             details.setUnitPrice(product.getProductprice());
             details.setProduct(product);
             details.setReserve(savedReserve);
 
             reserveDetailsRepository.save(details);
-
             total += product.getProductprice() * item.getQuantity();
         }
 
         savedReserve.setTotalPrice(total);
-
         reserveRepository.save(savedReserve);
 
         eventPublisher.publishReservaCreated(
@@ -254,7 +225,6 @@ public class ReservaService {
                 savedReserve.getIdUser());
 
         ReservaResponse response = new ReservaResponse();
-
         response.setIdReserva(savedReserve.getIdReserva());
         response.setReserveDate(savedReserve.getReserveDate());
         response.setTotalPrice(savedReserve.getTotalPrice());
@@ -277,19 +247,13 @@ public class ReservaService {
         }
 
         for (ReserveDetails detail : reserve.getReserveDetails()) {
-
             Product stockRecovered = detail.getProduct();
-
-            stockRecovered.setProductStock(
-                    stockRecovered.getProductStock() + detail.getQuanty());
-
+            stockRecovered.setProductStock(stockRecovered.getProductStock() + detail.getQuanty());
             productRepository.save(stockRecovered);
         }
 
         reserve.setStatus(ReserveStatus.CANCELADO);
-
         reserveRepository.save(reserve);
-
         eventPublisher.publishReservaCancelled(request.getIdReserve());
     }
 
@@ -314,6 +278,7 @@ public class ReservaService {
                     reserve.getReserveDate(),
                     reserve.getTotalPrice(),
                     reserve.getStatus().name(),
+                    reserve.getDeliveryAddress(), // ← nuevo
                     products);
 
         }).toList();
@@ -329,19 +294,13 @@ public class ReservaService {
         }
 
         for (ReserveDetails detail : reserve.getReserveDetails()) {
-
             Product stockRecovered = detail.getProduct();
-
-            stockRecovered.setProductStock(
-                    stockRecovered.getProductStock() + detail.getQuanty());
-
+            stockRecovered.setProductStock(stockRecovered.getProductStock() + detail.getQuanty());
             productRepository.save(stockRecovered);
         }
 
         reserve.setStatus(ReserveStatus.CANCELADO);
-
         reserveRepository.save(reserve);
-
         eventPublisher.publishReservaCancelled(idReserva);
     }
 }

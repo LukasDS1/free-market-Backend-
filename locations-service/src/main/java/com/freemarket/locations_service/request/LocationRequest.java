@@ -23,6 +23,9 @@ public class LocationRequest {
     @Schema(description = "Comuna", example = "Colina", requiredMode = Schema.RequiredMode.REQUIRED)
     public String comuna;
 
+    @Schema(description = "Tipo de dirección", example = "CASA")
+    public String addressType; 
+
     @Schema(description = "Región", example = "Región Metropolitana", requiredMode = Schema.RequiredMode.REQUIRED)
     public String region;
 }

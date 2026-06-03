@@ -1,21 +1,14 @@
 package com.freemarket.reserva_service.config;
 
-import java.sql.Date;
-import java.time.LocalDate;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.freemarket.reserva_service.enums.ReserveStatus;
 import com.freemarket.reserva_service.model.Product;
 import com.freemarket.reserva_service.model.Provider;
-import com.freemarket.reserva_service.model.Reserve;
-import com.freemarket.reserva_service.model.ReserveDetails;
 import com.freemarket.reserva_service.repository.ProductRepository;
 import com.freemarket.reserva_service.repository.ProviderRepository;
-import com.freemarket.reserva_service.repository.ReserveDetailsRepository;
-import com.freemarket.reserva_service.repository.ReserveRepository;
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,9 +19,7 @@ public class LoadDataBase {
     @Bean
     CommandLineRunner initData(
             ProviderRepository    providerRepo,
-            ProductRepository     productRepo,
-            ReserveRepository     reserveRepo,
-            ReserveDetailsRepository detailsRepo) {
+            ProductRepository     productRepo) {
 
         return args -> {
 
@@ -69,30 +60,6 @@ public class LoadDataBase {
             productRepo.save(prod1);
             productRepo.save(prod2);
             productRepo.save(prod3);
-
-            Reserve reserve = new Reserve();
-            reserve.setIdUser(2L);
-            reserve.setReserveDate(Date.valueOf(LocalDate.now()));
-            reserve.setTotalPrice(44980);          // 29990 + 14990
-            reserve.setIdempotencyKey("seed-reserve-user2-001");
-            reserve.setStatus(ReserveStatus.RESERVADO);
-
-            reserveRepo.save(reserve);
-
-            ReserveDetails detail1 = new ReserveDetails();
-            detail1.setQuanty(1);
-            detail1.setUnitPrice(29990);
-            detail1.setProduct(prod1);
-            detail1.setReserve(reserve);
-
-            ReserveDetails detail2 = new ReserveDetails();
-            detail2.setQuanty(1);
-            detail2.setUnitPrice(14990);
-            detail2.setProduct(prod3);
-            detail2.setReserve(reserve);
-
-            detailsRepo.save(detail1);
-            detailsRepo.save(detail2);
 
             System.out.println("Datos iniciales de reserva_service cargados.");
         };
