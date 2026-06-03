@@ -23,10 +23,12 @@ public class ReservaDetalleResponse {
     @Schema(description = "Precio total de la reserva en pesos", example = "47970")
     public Integer totalPrice;
 
-    @Schema(description = "Estado actual de la reserva", example = "RESERVADO",
-        allowableValues = {"RESERVADO", "PENDIENTE", "CANCELADO"})
+    @Schema(description = "Estado actual de la reserva", example = "RESERVADO",allowableValues = {"RESERVADO", "PENDIENTE", "CANCELADO"})
     public String status;
 
+    @Schema(description = "Ubicacion del usuario", example = "Av.Siempre viva 3009", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String deliveryAddress;
+    
     @Schema(description = "Lista de productos incluidos en la reserva")
     public List<ProductoReservaResponse> products;
 }

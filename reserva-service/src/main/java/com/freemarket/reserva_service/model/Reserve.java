@@ -44,6 +44,9 @@ public class Reserve {
 
     @Column(unique = true, nullable = false)
     private String idempotencyKey;
+
+    @Column(nullable = true, length = 500)
+    private String deliveryAddress;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
