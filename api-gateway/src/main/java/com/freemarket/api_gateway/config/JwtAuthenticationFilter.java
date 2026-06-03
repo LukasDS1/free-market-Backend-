@@ -90,6 +90,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/", "READ_DELIVERY");
         ROUTE_PRIVILEGES.put("GET:/api-v1/delivery", "READ_DELIVERY");
 
+        // reports
+        ROUTE_PRIVILEGES.put("POST:/api-v1/delivery/reports/", "CREATE_REPORT");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reports/usuario", "READ_REPORT");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reports/all", "READ_REPORT");
+        ROUTE_PRIVILEGES.put("GET:/api-v1/delivery/reports/status/", "READ_REPORT");
+        ROUTE_PRIVILEGES.put("PATCH:/api-v1/delivery/reports/", "UPDATE_REPORT");
+
         // location
         ROUTE_PRIVILEGES.put("POST:/api-v1/location/createLocation", "CREATE_LOCATION");
         ROUTE_PRIVILEGES.put("PUT:/api-v1/location/updateLocation", "UPDATE_LOCATION");
